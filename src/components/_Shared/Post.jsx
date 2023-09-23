@@ -13,10 +13,10 @@ export default function Post({showPopup,post}) {
     TimeAgo.addDefaultLocale(en)
 
 
-    console.log("displayiung post: ", post)
+    
     const dblClickHandler = (event) => {
         if(event.detail === 2){
-            console.log("double click post: ", post)
+            
             showPopup(post)
         }
     }
@@ -27,7 +27,7 @@ export default function Post({showPopup,post}) {
 
         let resJson = await res.json()
 
-        console.log("restweeted post: ", resJson)
+        
         return resJson
     }, [post.original_post_id])
     useEffect(()=>{
@@ -100,7 +100,7 @@ export default function Post({showPopup,post}) {
                                     setIsLiked(true)
                                 }
                             })
-                        console.log("liked")
+                        
                     }}}>
                     <div className={`post__interact--${isLiked ? "liked" : "like"}-icon`}/>
                     <span className="post__interact--like-count">{likes}</span>

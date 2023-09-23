@@ -1,9 +1,9 @@
 export function isAuthenticated(){
-    console.log('isAuthenticated',!!localStorage.getItem('gossip_user'))
+    
     return !!localStorage.getItem('gossip_user');
 }
 export function register(info={}, toggleAuthPopUp){
-    console.log('register info: ',info)
+    
 fetch('http://localhost:8080/users/register', {
         method: 'POST',
         body: JSON.stringify(info),
@@ -16,19 +16,19 @@ fetch('http://localhost:8080/users/register', {
             if(response.error){
                 throw new Error(response.error)
             }
-            console.log('username',response.username)
+            
             localStorage.setItem('gossip_user', JSON.stringify(response));
             toggleAuthPopUp();
 
         }
     ).catch((error)=>{
-        console.log('e',error)
+        
     alert(`register failed: ${error}`)
     })
 
 }
 export function login(info={},toggleAuthPopUp){
-    console.log('login info: ',info)
+    
     fetch('http://localhost:8080/users/login', {
         method: 'POST',
         body: JSON.stringify(info),
@@ -41,13 +41,13 @@ export function login(info={},toggleAuthPopUp){
             if(response.error){
                 throw new Error(response.error)
             }
-            console.log('username',response.username)
+            
             localStorage.setItem('gossip_user', JSON.stringify(response));
             toggleAuthPopUp();
 
         }
     ).catch((error)=>{
-        console.log('e',error)
+        
         alert(`login failed: ${error}`)
     })
 
@@ -62,9 +62,9 @@ export async function logout() {
             'Content-Type': 'application/json'
         }
     }).then(r => {
-        console.log(`response: `, r)
+        
     }).catch(e => {
-        console.log(`error: `, e)
+        
     })
 
     localStorage.removeItem('gossip_user');

@@ -22,7 +22,7 @@ export default function AuthModal () {
         setUserCredentials({...userCredentials, [e.target.name]: e.target.value})
     }
     useEffect(()=>{
-        console.log("userCreds: ",userCredentials)
+        
     }, [userCredentials])
 
     const [isLogin, setIsLogin] = useState(false) // true = login, false = register

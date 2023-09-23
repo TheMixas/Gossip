@@ -19,7 +19,7 @@ export default function UserContainer({user}){
                     }else
                         alert("Something went wrong!")
 
-                }).catch(err => console.log(err));
+                }).catch()
         }else{
             await sendFriendRequest(user?.id).then(
                 (res) => {
@@ -29,7 +29,7 @@ export default function UserContainer({user}){
                     }else
                         alert("Something went wrong!")
 
-                }).catch(err => console.log(err));
+                }).catch()
         }
 
 

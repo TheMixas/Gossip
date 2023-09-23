@@ -16,7 +16,7 @@ export default function NotifsPage({toggleAuthPopup, user={name:"Pablo"}}) {
 
     const getFriendRequests = useCallback(()=>{
         fetchFriendRequests()?.then((res)=>res.json()).then((res)=>{
-            console.log("JSON friend requests: ", res)
+            
             setFriendRequests(res)
         })
     },[])
@@ -27,9 +27,9 @@ export default function NotifsPage({toggleAuthPopup, user={name:"Pablo"}}) {
 
 
     const handleAcceptFriendRequest = (userID,id)=>{
-        console.log("accept friend request id: ", userID)
+        
         acceptFriendRequest(userID).then((res)=>{
-            console.log("accept friend request res: ", res)
+            
             if(res.status===200 || res.status === 400){
                 setFriendRequests(friendRequests.filter((friendRequest)=>friendRequest.id!==id))
             }
@@ -37,7 +37,7 @@ export default function NotifsPage({toggleAuthPopup, user={name:"Pablo"}}) {
     }
     const handleRejectFriendRequest = (rejectedId)=>{
         rejectFriendRequest(rejectedId).then((res)=>{
-            console.log("reject friend request res: ", res)
+            
             if(res.status===200 || res.status === 400){
                 setFriendRequests(friendRequests.filter((friendRequest)=>friendRequest.sender_user_id!==rejectedId))
             }
@@ -55,7 +55,7 @@ export default function NotifsPage({toggleAuthPopup, user={name:"Pablo"}}) {
                     </div>
                     {
                         displayFriendRequests && friendRequests.map((friendRequest, index)=> {
-                            console.log("friend request: ", friendRequest)
+                            
                                 return (
                                     <div
                                         // style={{display: displayFriendRequests ? "flex" : "none"}}

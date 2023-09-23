@@ -13,7 +13,7 @@ function SearchInputField({placeholder, type}) {
                     if(type === "nav-bar") {
                         setQuery(e.target.value)
                         navigate(`/`)
-                        console.log("query: ", query)
+                        
                     }
                 }}
                 className={`input-field input-field__${type}`}

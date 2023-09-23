@@ -8,7 +8,7 @@ export const CreatePostModalContextProvider = ({children}) => {
     const [createPostPopup, setCreatePostPopup] = useState(false);
     const toggleCreatePostPopup = ()=>{
         setCreatePostPopup(!createPostPopup)
-        console.log("toggle create post popup")
+        
     }
 
     return(

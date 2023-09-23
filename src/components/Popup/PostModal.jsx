@@ -18,8 +18,8 @@ export default function PostModal({setPopupAndOpen}) {
     const {postPopup,setPopup,popUpPost,setPopUpPost,popUpPostComments,
         setPopUpPostComments,popUpPostRecentLikers, setPopUpPostRecentLikers,
         updateUserPopup, setUpdateUserPopup,retweetedPost, setRetweetedPost,togglePostPopup} = useContext(PostModalContext);
-    console.log("post modal: ", popUpPost)
-    console.log("retweeted post: ", retweetedPost)
+    
+    
     if(postPopup){
         document.body.style.overflow = "hidden"
         // document.body.classList.add("active-modal")
@@ -47,7 +47,7 @@ export default function PostModal({setPopupAndOpen}) {
 
     const handleLikePost = async () => {
         if(isLiked) {
-            console.log("unlike")
+            
             await unlikePost(popUpPost.id).then(
                 (res) => {
                     if(res.status === 200){
@@ -56,7 +56,7 @@ export default function PostModal({setPopupAndOpen}) {
                     }else
                         alert("Something went wrong!")
 
-                }).catch(err => console.log(err));
+                }).catch()
         }else{
             await likePost(popUpPost.id).then(
                 (res) => {
@@ -66,7 +66,7 @@ export default function PostModal({setPopupAndOpen}) {
                     }else
                         alert("Something went wrong!")
 
-                }).catch(err => console.log(err));
+                }).catch()
         }
 
     }
@@ -76,11 +76,11 @@ export default function PostModal({setPopupAndOpen}) {
         setEngageType(type)
     }
     const handleAddComment =async (post,retweetedPost) => {
-        await fetchOwnAvatar().then(res => res.json()).then(res => console.log("own avatar: ", post.avatar = res.avatar)).catch(err => console.log(err));
+        await fetchOwnAvatar().then(res => res.json()).then()
         post.name = getName();
         post.username = getUsername();
         post.createdDate = "Now";
-        console.log("handle add comment: post: ", post)
+        
        setComments([post, ..._comments])
     }
 
@@ -100,7 +100,7 @@ export default function PostModal({setPopupAndOpen}) {
                     }
                 }
 
-            }).catch(err => console.log(err));
+            }).catch()
 
     }
     const handleRetweet =async (post,retweetedPost) => {

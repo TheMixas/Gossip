@@ -8,7 +8,7 @@ export const AuthModalContextProvider = ({children}) => {
     const [authPopup, setAuthPopup] = useState(!isAuthenticated());
     const toggleAuthPopup = ()=>{
         setAuthPopup(!authPopup)
-        console.log("toggle auth popup")
+        
     }
 
     return(

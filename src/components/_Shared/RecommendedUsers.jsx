@@ -21,7 +21,7 @@ export default function RecommendedUsers({title,users=[]}) {
                     }else
                         alert("Something went wrong!")
 
-                }).catch(err => console.log(err));
+                }).catch()
         }else{
             await sendFriendRequest(friendID).then(
                 (res) => {
@@ -39,7 +39,7 @@ export default function RecommendedUsers({title,users=[]}) {
                     }else
                         alert("Something went wrong!")
 
-                }).catch(err => console.log(err));
+                }).catch()
         }
 
 

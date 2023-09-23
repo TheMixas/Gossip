@@ -8,30 +8,30 @@ import {fetchAvatar} from "../../utils/UserCalls";
 export default function ChatCard({conversation, handleClick,isConversationCard}){
         const [convoIcon, setConvoIcon] = useState(null)
         if(isConversationCard){
-            console.log("handleChatCardConv: conversation: ", conversation)
+            
         }
         let getConvoIcon = useCallback(async () => {
             if(conversation.isGroupChat)
                 setConvoIcon(groupAvatar)
             else{
-                console.log("attempting to fetch avatar")
+                
                 fetchAvatar(conversation.userID).then((res) => {
                     if(res.status !== 200){
 
-                        console.log("Error fetching avatar, status: ", res.status)
+                        
                         throw new Error("Error fetching avatar")
                     }else return res.blob()
                 }).then(blob => {
                     setConvoIcon(URL.createObjectURL(blob));
                 }).catch((error)=>{
-                    console.log(error)
+                    
                     setConvoIcon(defaultAvatar)
                 });
             }
         },[conversation?.isGroupChat])
 
         useEffect(() => {
-            getConvoIcon().catch(err => console.log(err));
+            getConvoIcon().catch(err => console.log(err))
         },[getConvoIcon])
 
         return(

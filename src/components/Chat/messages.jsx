@@ -68,7 +68,7 @@ export default function Messages({socket}) {
     const [conversations,setConversations] = useState([])
 
     useEffect(() => {
-        console.log("currentConversation: ",currentConversation);
+        
     }, [currentConversation]);
 
     //NOTE: fetching conversations and suggested users
@@ -77,10 +77,10 @@ export default function Messages({socket}) {
             if (res.status !== 200) {
                 throw new Error("Error fetching conversations")
             } else {
-                console.log("res: ", res);
+                
                 let resJSON= await res.json();
 
-                console.log("handleUsERcONVERSATIONS resJSOIN: ", resJSON);
+                
                 for (let i = 0; i < resJSON.conversations.length; i++) {
                     resJSON.conversations[i].conversationName = resJSON.conversations[i].conversation_name+"hi";
                 }
@@ -99,7 +99,7 @@ export default function Messages({socket}) {
     },[getConversations])
 
     useEffect(() => {
-        console.log("messages: ", messages);
+        
     }, [messages]);
     function onConnect() {
         setIsConnected(true);
@@ -113,7 +113,7 @@ export default function Messages({socket}) {
 
     useEffect(() => {
         socket.on("connect", () => {
-            console.log("connected");
+            
             onConnect()
         });
         return () => {
@@ -123,7 +123,7 @@ export default function Messages({socket}) {
 
     useEffect(() => {
         socket.on("disconnect", () => {
-            console.log("disconnected");
+            
             onDisconnect()
         });
         return () => {
@@ -159,13 +159,13 @@ export default function Messages({socket}) {
     const handleLoadConversation = useCallback((id) => {
         //NOTE: fetch messages,participants,etc. from server
         //
-        console.log("handleLoadPast Messages: id: ", id);
+        
          fetchFullConversation(id).then(async res => {
             if (res.status !== 200) {
                 throw new Error("Error fetching messages")
             } else {
                 let convJSON = await res.json();
-                console.log("convJSON: ", convJSON);
+                
 
                 setMessages(convJSON.messages);
                setCurrentConversation(convJSON.conversation);
@@ -184,7 +184,7 @@ export default function Messages({socket}) {
 
     //NOTE: handle conversation join, for joining a new conversation
     const handleConversationJoin = async (conversation) => {
-        console.log("handleConversationJoin called, conversation: ", conversation);
+        
         if (currentConversation.isGroupChat) {
             handleLeaveGroupRoom(currentConversation);
         }
@@ -210,22 +210,22 @@ export default function Messages({socket}) {
         if(media){
             base64Media = await convertMediaToBase64(media);
         }
-        console.log("base64Media: ", base64Media);
+        
 
         //NOTE: server side text
         if(currentConversation.isGroupChat === 1){
-            console.log("emitting group chat message");
+            
             socket.emit('group chat message', currentConversation.conversationID,message, base64Media)
         }else{
-            console.log("emitting private chaat message");
-            console.log("currentConversation ", currentConversation);
+            
+            
             let receiverID = Object.keys(currentConversation.members)?.filter((id)=>{
-                console.log("111 id: ", id);
-                console.log("111 idVSGeTID: ", id != getID());
-                console.log("111 getID(): ", getID());
+                
+                
+                
                 return id != getID();
             })[0]
-            console.log("receiverID: ", receiverID);
+            
             socket.emit('private chat message'  ,receiverID,message, base64Media,currentConversation.conversation_id);
         }
 
@@ -236,9 +236,9 @@ export default function Messages({socket}) {
         // }
         if(base64Media.length > 0){
             base64Media.map((src) => {
-                console.log("base64: src: ", src)
+                
                 let base64Image = src.split(';base64,').pop();
-                console.log("base64Image: ", base64Image);
+                
                 imagePreviews.push({isFile: true, sender_id: getID(), message_value: base64Image})
             })
         }
@@ -249,8 +249,8 @@ export default function Messages({socket}) {
     }
     const handleReceiveMessage = async (message) => {
         //NOTE: message = {value,isFile,senderid}
-        console.log("handleReceiveMessage called, message: ", message);
-        console.log("handle messages before set: ", messages);
+        
+        
         let receivedMessage;
         if (message.isFile) {
             let base64Image = message.value.split(';base64,').pop();

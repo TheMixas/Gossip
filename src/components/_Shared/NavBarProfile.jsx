@@ -22,10 +22,10 @@ function NavBarProfile(){
         let avatarUrl;
         await fetchOwnAvatar().then(res => res.json()).then(
             (data) => {
-                console.log("avatar: ", data)
-                if(data.error) return console.log(data.error);
+                
+                if(data.error) return 
                 avatarUrl = data?.avatar;
-            }).catch(err => console.log(err));
+            }).catch(err => console.log(err))
         //print
         setAvatar(avatarUrl);
     },[])
@@ -34,20 +34,20 @@ function NavBarProfile(){
             let bannerUrl;
             await fetchOwnBanner().then(res => res.json()).then(
                 (data) => {
-                    console.log("banner: ", data)
-                    if(data.error) return console.log(data.error);
+                    
+                    if(data.error) return 
                     bannerUrl = data?.banner;
-                }).catch(err => console.log(err));
+                }).catch(err => console.log(err))
             //print
             setBanner(bannerUrl);
     })
     useEffect(  () => {
-        fetchAvatar().catch(err => console.log(err));
-        fetchBanner().catch(err => console.log(err));
+        fetchAvatar().catch(err => 
+        fetchBanner().catch(err => console.log(err)))
     },[fetchAvatar, fetchBanner])
     useEffect( () => {
-        console.log("avatar: " ,avatar)
-        console.log("banner: " ,banner)
+        
+        
     }, [avatar])
     return (
         <div className="user-profile-dropdown-container">

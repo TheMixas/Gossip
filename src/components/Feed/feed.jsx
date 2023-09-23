@@ -27,41 +27,41 @@ function Feed({showPostPopup}) {
     const getHotPosts = useCallback(async () => {
         await fetchHotPosts().then(res => res.json()).then(
             (data) => {
-                console.log("hot posts: ", data)
+                
                 setPosts(data.hPosts);
-            }).catch(err => console.log(err));
+            }).catch()
     }, [])
     const getOwnNamesAndAvatars = useCallback(async () => {
         await fetchNamesAndAvatar(getID()).then(res => res.json()).then(
             (data) => {
-                console.log("names and avatars: ", data.user)
-                if(data.error) return console.log(data.error);
+                
+                if(data.error) return 
                 setNamesAndAvatars(data.user);
-            }).catch(err => console.log(err));
+            }).catch()
     }, [])
     const getOwnStats = useCallback(async () => {
         await fetchUserStats(getID()).then(res => res.json()).then(
             (data) => {
-                console.log("stats: ", data)
-                if(data.error) return console.log(data.error);
+                
+                if(data.error) return 
                 setUserStats(data);
             })
     })
     const getMostPopularUsers = useCallback(async () => {
         await fetchMostPopularUsers().then(res => res.json()).then(
             (data) => {
-                console.log("most popular users: ", data)
-                if(data.error) return console.log(data.error);
+                
+                if(data.error) return 
                 setMostPopularUsers(data.users);
             })
     })
 
     //NOTE: fetch everything on mount
     useEffect(() => {
-        getHotPosts().catch(err => console.log(err));
-        getOwnNamesAndAvatars().catch(err => console.log(err));
-        getOwnStats().catch(err => console.log(err));
-        getMostPopularUsers().catch(err => console.log(err));
+        getHotPosts().catch()
+        getOwnNamesAndAvatars().catch()
+        getOwnStats().catch()
+        getMostPopularUsers().catch()
     }, [])
 
     //posts
@@ -78,7 +78,7 @@ function Feed({showPostPopup}) {
 
     //NOTE: This is the function that is called when the user submits the form
     const handleAddPost =async (post) => {
-        await fetchOwnAvatar().then(res => res.json()).then(res => console.log("own avatar: ", post.avatar = res.avatar)).catch(err => console.log(err));
+        await fetchOwnAvatar().then(res => res.json()).then()
         post.name = getName();
         post.username = getUsername();
         post.created_at = Date.now();
@@ -86,27 +86,27 @@ function Feed({showPostPopup}) {
     }
 
     useEffect(() => {
-        console.log("query: ", query)
-        handleQuery().catch(err => console.log(err));
+        
+        handleQuery().catch()
     }, [query])
     const handleQuery = async () => {
 
         if(query === '' || query === undefined) {
-            console.log("query: is empty")
+            
             setSearchedUsers([]);
             await fetchHotPosts().then(res => res.json()).then(
                 (data) => {
-                    console.log("hot posts: ", data)
+                    
                     setPosts(data.hPosts);
-                }).catch(err => console.log(err));
+                }).catch()
             return;
 
         }
 
         await fetchQueryUsersAndPosts(query).then(res => res.json()).then(
             (data) => {
-                console.log("searched users: ", data.queriedUsers)
-                if(data.error) return console.log(data.error);
+                
+                if(data.error) return 
                 setSearchedUsers(data.queriedUsers);
                 setPosts(data.queriedPosts);
             })

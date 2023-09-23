@@ -44,13 +44,13 @@ function App() {
     })
     const getAndSetRetweetedPost = useCallback(async (postId)=>{
         handleGetPost(postId).then(r => r.json()).then(r => {
-            console.log("retweet post received: ", r)
+            
             setRetweetedPost(r)
-        }).catch(e => console.log("retweet post error: ", e))
+        }).catch(e => console.log(e))
     })
 
     useEffect(()=>{
-        console.log("recent likers: ",popUpPostRecentLikers)
+        
     },[popUpPostRecentLikers])
 
     //2
@@ -65,22 +65,22 @@ function App() {
         getAmIAuthenticated().then(r => {
             if(r.status === 200){
                 setAuthPopup(false)
-                console.log("user is authenticated")
+                
             }else{
                 setAuthPopup(true)
-                console.log("user is not authenticated")
+                
                 //Clear local storage
                 clearAccountInfo()
             }
-        }).catch(e => console.log("error checking if user is authenticated: ", e))
+        }).catch(e => console.log(e))
 
     },[])
     const setPopupPostAndToggle= async (post) => {
 
-        console.log(" received set and toggle. post: ", post)
+        
         setPopUpPost(post)
         getPostComments(post.id).then(r => {
-            console.log("comments r: ", r)
+            
             setPopUpPostComments(r)
         })
         await getAndSetRetweetedPost(post.original_post_id)

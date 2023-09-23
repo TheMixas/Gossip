@@ -41,9 +41,9 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
             if(profileJSON.error){
                 setUser(null)
             }
-            console.log("profileJSON: ", profileJSON)
+            
         }).catch(err=>{
-            console.log("error: ", err)
+            
         })
 
 
@@ -51,14 +51,14 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
     const getMostPopularUsers = useCallback(async () => {
         await fetchMostPopularUsers()?.then(res => res.json()).then(
             (data) => {
-                console.log("most popular users: ", data)
-                if(data.error) return console.log(data.error);
+                
+                if(data.error) return 
                 setMostPopularUsers(data.users);
             })
     })
     useEffect(()=>{
         GetProfileContent()
-        getMostPopularUsers().catch(err => console.log(err));
+        getMostPopularUsers().catch()
     },[GetProfileContent])
 
 
@@ -78,7 +78,7 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
                     }else
                         alert("Something went wrong!")
 
-                }).catch(err => console.log(err));
+                }).catch()
         }else{
             await sendFriendRequest(user?.id)?.then(
                 (res) => {
@@ -88,7 +88,7 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
                     }else
                         alert("Something went wrong!")
 
-                }).catch(err => console.log(err));
+                }).catch()
         }
 
     }

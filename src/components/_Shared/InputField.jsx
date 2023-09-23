@@ -32,10 +32,10 @@ export default function InputField({text="What`s up?",buttonText="Post",isMessag
     }, [media])
     const handleMediaChange = (e) => {
         setMedia([...media, e.target.files[0]]);
-        console.log(media)
+        
     }
     const handleMediaRemove = (preview, image) => {
-        console.log("removing, ", image)
+        
 
         //remore from pewviews
         setMediaPreview(mediaPreview.filter((imgPreview) => imgPreview !== preview));
@@ -74,9 +74,9 @@ export default function InputField({text="What`s up?",buttonText="Post",isMessag
                                 return;
                           }
                          handleCreatePostForm(e, textArea,media, isComment, originalPostID,isRetweet).then(async res => {
-                             console.log("POSt response: ", res)
+                             
                              let resJSON = await res.json()
-                             console.log("post created resJSON: ", resJSON)
+                             
                              if (res.status === 200) {
                                  setTextArea("")
                                  setMedia([])
@@ -97,7 +97,7 @@ export default function InputField({text="What`s up?",buttonText="Post",isMessag
 
                                  })
                              }
-                         }).catch(err => console.log(err))
+                         }).catch()
                       }}
                       className="create-tweet__input-and-actions">
 

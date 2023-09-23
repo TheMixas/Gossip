@@ -9,12 +9,12 @@ export function UserInfoList({showDetails,members={},toggleDetails}) {
                 <div className="members">
                     <span
                         onClick={()=>{
-                            console.log("clicking")
+                            
                             toggleDetails()
                         }}
                         className="close-button">✖</span>
                     {Object.keys(members)?.map(member => {
-                        console.log("member: ",member);
+                        
                         if(member != getID()){
                             return <DetailedInfoCard showDetails={showDetails} member={members[member]} key={member}/>
                         }

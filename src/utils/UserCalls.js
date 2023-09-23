@@ -147,7 +147,7 @@ export function fetchHotPosts(){
 export function likePost(postId){
 
     //print post id
-    console.log("postId: ", postId)
+    
    return fetch(`http://localhost:8080/posts/like`, {
         method: 'POST',
         credentials: 'include',
@@ -165,7 +165,7 @@ export function likePost(postId){
 export function unlikePost(postId){
 
         //print post id
-        console.log("postId: ", postId)
+        
     return fetch(`http://localhost:8080/posts/unlike`, {
             method: 'POST',
             credentials: 'include',
@@ -188,7 +188,7 @@ export function fetchPost(postId){
 
 //fetch users avatar
 export function fetchAvatar(userId){
-    console.log("fetching avatar with. userId: ", userId)
+    
 return fetch(`http://localhost:8080/users/${userId}/avatar`, {
         method: 'GET',
         credentials: 'include',
@@ -211,7 +211,7 @@ export function fetchProfile(username){
 }
 
 export function fetchNamesAndAvatar(id){
-    console.log("fetching names and avatar with. id: ", id)
+    
     return fetch(`http://localhost:8080/${id}/namesandavatar`, {
         method: 'GET',
         credentials: 'include',

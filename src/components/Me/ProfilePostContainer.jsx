@@ -29,7 +29,7 @@ export default function ProfilePostContainer({user, showPopup}) {
             <div className="profile__body__center__body">
                 {
                     posts.map(post => {
-                        console.log("post: ", post)
+                        
                         return <Post key={post.id} post={post} showPopup={showPopup} />
                     })
                 }

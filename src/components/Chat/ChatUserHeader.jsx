@@ -3,7 +3,7 @@ import {getUsernameFromID} from "../../utils/Utils";
 
 export function ChatUserHeader({expanded, onClick,currConversation}) {
 
-    console.log("currConversation: ", currConversation)
+    
     return <div className={`chat-header chat-header--${expanded}`}>
         <SmallAvatar src={"https://picsum.photos/50"}/>
         <div className="chat-header__names">
