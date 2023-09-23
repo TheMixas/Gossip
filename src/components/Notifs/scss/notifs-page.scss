@@ -1,0 +1,82 @@
+@use './../../../scss/vars.scss' as vars;
+.page__notifs{
+  margin-top: 4.4rem;
+  height: calc(100vh - 4.4rem);
+  background-color: vars.$dark-2;
+  display: flex;
+    flex-direction: column;
+  width: 100%;
+  &__friend-request{
+
+    width: 80%;
+    margin: 3rem auto;
+    &--header{
+      width: 100%;
+      padding: 1.5rem;
+      background-color: vars.$dark-3;
+      text-transform: uppercase;
+      box-sizing: border-box;
+      &--text{
+        font-size: 1.4rem;
+        color: vars.$light-1;
+        text-align: center;
+      }
+      &:hover{
+        cursor: pointer;
+      }
+    }
+    &--request-container{
+      display: flex;
+        flex-direction: column;
+      box-sizing: border-box;
+      width: 100%;
+      animation: ease-in 1s;
+      &--request{
+        box-sizing: border-box;
+        animation: ease-in 1s;
+
+        background-color: vars.$dark-1;
+        color: vars.$light-1;
+        display: flex;
+        gap:1rem;
+        width: 100%;
+        align-items: center;
+        padding: .4rem;
+        &--avatar{
+
+        }
+        &--name{
+          color: vars.$light-1;
+            font-size: 2rem;
+          text-decoration: none;
+        }
+        &--actions{
+          display: flex;
+            gap: 1rem;
+          margin-left: auto;
+            &--accept{
+              background: url('./../../../svgs/check_circle.svg') no-repeat;
+              background-size: cover;
+              width: 5rem;
+              height: 5rem;
+                &:hover{
+                    cursor: pointer;
+                }
+            }
+            &--reject{
+              background: url('./../../../svgs/cancel_circle.svg') no-repeat;
+              background-size: cover;
+              width: 5rem;
+              height: 5rem;
+              &:hover{
+                cursor: pointer;
+              }
+            }
+        }
+      }
+
+    }
+
+
+  }
+}

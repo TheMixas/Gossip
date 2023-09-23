@@ -1,0 +1,48 @@
+.img-gallery{
+  border: #292f33 solid 1px;
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+ box-sizing: border-box;
+}
+
+.img-container{
+  opacity: 0;
+  transition-duration: 1s;
+  &--active{
+    opacity: 1;
+    transition-duration: 1s;
+    width: 100%;
+    height: 100%;
+  }
+}
+.image{
+  width: 100%;
+  height: 100%;
+}
+.gallery-nav{
+
+  width: 3rem;
+  height: 3rem;
+  z-index: 10;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  &--prev{
+    background: white url("../../../svgs/previous.svg");
+    background-size: contain;
+    border-radius: 1rem;
+    //position: relative;
+    //top:-27rem;
+    left: 5%;
+  }
+    &--next{
+        background: white url("../../../svgs/next.svg");
+        background-size: contain;
+        border-radius: 1rem;
+        //position: relative;
+      //top:-30rem;
+        left: 90%;
+    }
+}

@@ -1,0 +1,11 @@
+.small-avatar{
+  &--avatar-link{
+    float: left;
+  }
+  &--img {
+    border-radius: .5rem;
+    object-fit: cover;
+    width: 6rem;
+    height: 6rem;
+  }
+}

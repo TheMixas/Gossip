@@ -1,0 +1,544 @@
+@use  './vars' as vars;
+.page__feed{
+
+
+}
+.feed{
+  width: 100%;
+  height: 100%;
+
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  //NOTE: CHANGE ACCORDING TO SCREEN SIZE
+  gap: 10rem;
+  padding-top: 4.4rem;
+  background-color: vars.$dark-2;
+
+  @media only screen and (max-width: 80em){
+    flex-direction: column;
+
+    justify-content: normal;
+    gap: 3rem;
+  }
+
+}
+
+
+
+.left-block{
+  height: fit-content;
+  margin-left: 10px;
+  margin-right: 10px;
+  position: sticky;
+  top: 5.4rem;
+  width: 52rem;
+  box-sizing: border-box;
+
+    @media only screen and (max-width: 80em) {
+        width: 98%;
+        margin: 0 auto;
+    }
+  @media only screen and (max-width: 80em) {
+    position: relative;
+  }
+}
+.center-block{
+  margin-top: 1.4rem;
+
+  @media only screen and (max-width: 80em) {
+    margin: 3rem auto;
+    width: 95%;
+
+  }
+}
+.right-block{
+  height: fit-content;
+  margin-left: 10px;
+  margin-right: 10px;
+  position: sticky;
+  top: 4.4rem;
+  width: 52rem;
+
+  @media only screen and (max-width: 80em) {
+   background-color: yellow;
+    display: none !important;
+  }
+}
+.cell{
+  box-sizing: border-box;
+  display: inline-block;
+
+}
+textarea{
+
+  background-color: white;
+  color: black;
+}
+.timeline{
+
+  min-width: 60rem;
+  margin-top: 3rem;
+
+  @media only screen and (max-width: 700px) {
+    min-width: 100%;
+  }
+
+  //Big screens
+    @media only screen and (min-width: 2500px) {
+      max-width: 70rem;
+    }
+  &--loading-container{
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+  }
+}
+.post{
+  display: grid;
+  width: 100%;
+  grid-template-columns: 5rem 48rem;
+  //old max50rem
+  grid-template-rows: [full-start names-start]1rem[names-end text-start] max-content [text-end retweet-start] fit-content(25rem)[retweet-end media-start] fit-content(25rem)[media-end interactions-start] 2rem[interactions-end full-end];
+  column-gap: .5rem;
+  row-gap: .3rem;
+  padding-left: 2%;
+    padding-right: 2%;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border: rgba(0, 0, 0, 0.1) solid 0.1rem;
+  border-radius: .4rem;
+  background-color: vars.$dark-1;
+  box-sizing: border-box;
+
+  @media only screen and (max-width: 80em) {
+    grid-template-columns: 6rem 48rem;
+  }
+
+
+  &:hover {
+    cursor: pointer;
+  }
+  &__avatar{
+    border-radius: .5rem;
+
+    object-fit: cover;
+    &-link{
+      grid-column: 1/2;
+      grid-row: full-start/full-end;
+    }
+  }
+  &__body__text{
+    grid-column: 2/3;
+    grid-row: text-start/text-end;
+    width: 96%;
+
+  }
+  &__body__retweeted-post{
+    grid-column: 2/3;
+    grid-row: retweet-start/retweet-end;
+    width: 97%;
+    &--text{
+      color: vars.$primary;
+      font-size: 1.2rem;
+
+      font-weight: bold;
+    }
+  }
+  &__body__media{
+    grid-column: 2/3;
+    grid-row: media-start/media-end;
+    width: 96%;
+    box-sizing: border-box;
+    &--img{
+      //! OUTDATED
+      max-width: 96%;
+      max-height: 100%;
+
+    }
+  }
+  &__header{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    grid-column: 2/3;
+    &__date{
+        text-decoration: none;
+        color: gray;
+        font-size: 1.2rem;
+      &::before{
+        content: "·";
+        margin-right: 0.5rem;
+      }
+    }
+    &__info{
+      display: flex;
+      gap: 0.3rem;
+      &--name{
+        text-decoration: none;
+        color: black;
+        font-weight: bold;
+        font-size: 1.5rem;
+        &:hover{
+          text-decoration: underline;
+        }
+      }
+      &--username{
+        text-decoration: none;
+        color: gray;
+        font-size: 1.4rem;
+        &:hover{
+          text-decoration: underline;
+        }
+      }
+
+
+      //ADD DOT
+      &:after{
+        content: "·";
+        margin-left: 0.5rem;
+        font-size: 1.3rem;
+      }
+    }
+  }
+  &__interact{
+    display: flex;
+    grid-column: 2/3;
+    grid-row: interactions-start/interactions-end;
+    gap: 1rem;
+    margin-top: .4rem;
+    &--reply{
+      display: flex;
+      &-icon{
+        width: 2rem;
+        height: 2rem;
+        background: url("../svgs/reply.svg") no-repeat;
+        background-size: contain;
+
+      }
+
+    }
+    &--retweet{
+      display: flex;
+      &-icon{
+        width: 2rem;
+        height: 2rem;
+        background: url("../svgs/retweet.svg") no-repeat;
+        background-size: contain;
+      }
+    }
+    &--like{
+      display: flex;
+      &:hover .post__interact--like-icon{
+        background: url("../svgs/likeBlue.svg") no-repeat;
+        background-size: contain;
+      }
+      &-icon{
+        width: 2rem;
+        height: 2rem;
+        background: url("../svgs/like.svg") no-repeat;
+
+        background-size: contain;
+      }
+    }
+    &--liked{
+        display: flex;
+        &:hover .post__interact--liked-icon{
+            background: url("../svgs/like.svg") no-repeat;
+            background-size: contain;
+        }
+        &-icon{
+            width: 2rem;
+            height: 2rem;
+            background: url("../svgs/likeBlue.svg") no-repeat;
+            background-size: contain;
+        }
+    }
+
+  }
+}
+.user-info-container{
+  border: 1px solid vars.$dark-3;
+  background-color: vars.$dark-1;
+  box-shadow: 0px 0px 10px 0px vars.$dark-1;
+  border-radius: .4rem;
+
+  width:100%;
+}
+
+.user-info{
+
+  &__data{
+    padding: 1rem;
+  }
+  &__banner{
+    border-top-left-radius: .4rem;
+    border-top-right-radius: .4rem;
+    object-fit: cover;
+    height: 9rem;
+    width: 100%;
+  }
+  &__avatar{
+    &--link{
+        text-decoration: none;
+        color: black;
+        position: relative;
+        top: -2.3rem;
+        left: 1.5rem;
+    }
+    &--img{
+      border-radius: .5rem;
+      width: 8rem;
+      height: 8rem;
+      border: solid vars.$dark-3;
+      box-shadow: 0px 0px 20px 0px vars.$dark-1;
+      object-fit: cover;
+    }
+
+  }
+  &__names{
+    display: flex;
+    text-decoration: none;
+    flex-direction: column;
+    height: .5rem;
+    width: fit-content;
+    &--name{
+      font-size: 2rem;
+      font-weight: bold;
+      color: black;
+      position: relative;
+        top: -10rem;
+        left: 12rem;
+
+    }
+    &--username{
+      font-size: 1.5rem;
+      color: gray;
+      position: relative;
+      top: -13rem;
+      left: 12rem;
+      font-weight: normal;
+    }
+  }
+  &__stats{
+    display: flex;
+    position: relative;
+    top: -2rem;
+    gap: .4rem;
+    width: 70%;
+    margin: 0 auto;
+    justify-content: space-between;
+
+    &--stat{
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      &--label{
+        font-size: 1.5rem;
+        color: gray;
+        text-transform: uppercase;
+      }
+      &--number{
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: black;
+      }
+
+    }
+
+  }
+}
+.trends-container{
+  margin-top: 1.2rem;
+  border: 1px solid vars.$dark-3;
+  background-color: vars.$dark-1;
+  box-shadow: 0px 0px 10px 0px vars.$dark-1;
+  border-radius: .4rem;
+  width: 100%;
+  background-color: vars.$dark-1;
+
+}
+.trends{
+  width: 100%;
+  &__header{
+    display: flex;
+    flex-direction: column;
+    padding-top: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+
+    &--title{
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: black;
+    }
+    &__options{
+      display: flex;
+      text-decoration: none;
+      gap: 1rem;
+      &--refresh{
+        text-decoration: none;
+        font-size: 1rem;
+        color: gray;
+      }
+      &--view-all{
+        text-decoration: none;
+        font-size: 1rem;
+        color: gray;
+        &::before{
+          content: "·";
+          margin-right: 0.6rem;
+        }
+      }
+
+    }
+  }
+  &__body{
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    &__trend{
+      display: flex;
+      flex-direction: column;
+      &--title{
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: black;
+        cursor: pointer;
+        text-decoration: none;
+        &:hover{
+          text-decoration: underline;
+        }
+      }
+      &__info{
+        display: flex;
+        &--trending-in{
+          font-size: 1.5rem;
+          color: gray;
+
+        }
+        &--number{
+          font-size: 1.5rem;
+          color: gray;
+          margin-left : 0.5rem;
+          &::before{
+            content: "·";
+            margin-right: 0.2rem;
+          }
+
+        }
+      }
+    }
+  }
+}
+
+.who-to-follow{
+  margin-top: 1.2rem;
+  border: 1px solid vars.$dark-3;
+  border-radius: .4rem;
+  background-color: vars.$dark-1;
+  width: 100%;
+
+  &__header{
+    display: flex;
+    flex-direction: column;
+    padding-top: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    &--title{
+      font-size: 1.9rem;
+      font-weight: bold;
+      color: black;
+    }
+    &__options{
+      display: flex;
+      text-decoration: none;
+      gap: 1rem;
+      &--refresh{
+        text-decoration: none;
+        font-size: 1.2rem;
+        color: gray;
+      }
+      &--view-all{
+        text-decoration: none;
+        font-size: 1.2rem;
+        color: gray;
+        &::before{
+          content: "·";
+          margin-right: 0.6rem;
+        }
+      }
+    }
+  }
+  &__body{
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    gap:.3rem;
+    &__user{
+      display: flex;
+      flex-direction: row;
+      &--avatar-link{
+        float: left;
+        height: 5rem;
+      }
+      &--img{
+        border-radius: .5rem;
+        width: 5rem;
+        height: 5rem;
+        object-fit: cover;
+      }
+      &__info{
+        display: flex;
+        flex-direction: column;
+        margin-left: 1rem;
+        &__text{
+          display: flex;
+          gap: 0.5rem;
+          &--name{
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: black;
+            cursor: pointer;
+            text-decoration: none;
+            &:hover{
+              text-decoration: underline;
+            }
+          }
+          &--username{
+            font-size: 1.5rem;
+            color: gray;
+            text-decoration: none;
+          }
+        }
+      }
+
+
+      &--follow-button{
+        width: 10rem;
+        height: 3rem;
+        background-color: vars.$primary;
+        border: none;
+        border-radius: 7px;
+        &:hover{
+          background-color: vars.$primary-hovered;
+        }
+      }
+      &--followed-button{
+        width: 10rem;
+        height: 3rem;
+        background-color: vars.$dark-3;
+        border: none;
+        border-radius: 7px;
+        &:hover{
+          background-color: vars.$dark-2;
+        }
+      }
+    }
+  }
+
+}

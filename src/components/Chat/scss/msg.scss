@@ -1,0 +1,26 @@
+.message-holder{
+  display: flex;
+  &--ours{
+    border-bottom-left-radius: .3rem;
+    ////background-color: #3c3f44;
+    //color: #fff;
+    align-self: flex-end
+  }
+  &--others{
+    border-bottom-right-radius: .3rem;
+    //background-color: white;
+    //color: #000;
+    align-self: flex-start;
+  }
+
+}
+.sender-username{
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: white;
+}
+.message-column{
+  display: flex;
+    flex-direction: column;
+}
+//For moving

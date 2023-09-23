@@ -1,0 +1,46 @@
+@use '../scss/vars' as vars;
+.input-field-box{
+  display: flex;
+  align-items: center;
+}
+.input-field{
+  &__nav-bar{
+    background-color: vars.$dark-1;
+    box-sizing: border-box;
+    width: 100%;
+    height: 3rem;
+    font-size: 12px;
+    padding: 5px 27px 6px 12px;
+    line-height: 1;
+    border-radius: 21px;
+    transition: all .2s ease-in-out;
+    border: 1px solid vars.$dark-2;
+    color: vars.$light-1;
+    &:focus{
+      outline: none;
+      color: vars.$primary;
+      text-shadow: none;
+      background-color: vars.$dark-0;
+      box-shadow: none;
+
+    }
+  }
+
+  &__chat{
+    box-sizing: border-box;
+    width: 100%;
+    height: 3rem;
+    border-radius: 2.1rem;
+    padding: 5px 27px 6px 12px;
+    border: 1px solid #e1e8ed;
+    &:focus{
+      outline: none;
+      color: #292f33;
+      text-shadow: none;
+      background-color: white;
+      box-shadow: none;
+
+    }
+  }
+
+}

@@ -1,0 +1,38 @@
+.profile-container{
+  width: 59rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  //border: rgba(0, 0, 0, 0.1) solid 0.1rem;
+  &__header{
+    font-size: 1.7rem;
+    color:gray;
+    text-transform: uppercase;
+  }
+  &__body{
+    padding-top: 1rem;
+    &__wide-profile-container{
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      width: 100%;
+      &__names{
+        display: flex;
+        flex-direction: column;
+        padding-left: .6rem;
+        &--name{
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: black;
+        }
+        &--username{
+            font-size: 1.5rem;
+            color: gray;
+        }
+      }
+      &--flw-btn{
+        margin-left: auto;
+        border: none;
+      }
+    }
+  }
+}

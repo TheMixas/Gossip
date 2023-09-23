@@ -1,0 +1,200 @@
+@use  './../../../scss/vars' as vars;
+
+.modal, .overlay{
+  width: 100%;
+  height: 100%;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  position: fixed;
+  z-index: 999999;
+
+
+}
+.modal{
+
+}
+.modal__grid{
+  padding: 3rem;
+  z-index: 9999999;
+  background-color: vars.$dark-3;
+  display: flex;
+    flex-direction: column;
+  margin: 7rem auto;
+    width: 59rem;
+  box-sizing: border-box;
+
+  @media only screen and (max-width: 550px) {
+    width: 100%;
+
+  }
+  & p{
+    //height: 200rem;
+    //font-size: 50rem;
+  }
+  &__header{
+    display: flex;
+    &--close-btn{
+      cursor: pointer;
+      font-size: 1.6rem;
+      position: relative;
+      color:black;
+      top: -2rem;
+        left: 60rem;
+    }
+    &__names{
+      display:flex;
+      margin-left: 1rem;
+      flex-direction: column;
+      &--name{
+        font-size: 1.8rem;
+        margin: 0;
+        font-weight: bold;
+      }
+      &--username{
+        font-size: 1.4rem;
+        margin: 0;
+        color: gray;
+      }
+    }
+  }
+  &__body{
+    &__retweeted-post{
+      width: 97%;
+      &--text{
+        color: vars.$primary;
+        font-size: 1.2rem;
+
+        font-weight: bold;
+      }
+    }
+    &__navigation{
+      display: flex;
+      justify-content: center;
+      border-top: rgb(0,0,1,0.1) solid 1px;
+        border-bottom: rgb(0,0,1,0.1) solid 1px;
+      align-items: center;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+      &__interactions{
+        display: flex;
+        border-right: rgb(0,0,1,0.1) solid 1px;
+        padding-right: 2rem;
+        gap: 1rem;
+        &__interaction{
+          display: flex;
+          flex-direction: column;
+          &--text{
+            text-transform: uppercase;
+            color: #aec0c7;
+            font-size: 1.3rem;
+          }
+          &--count{
+            font-size: 1.6rem;
+            font-weight: bold;
+          }
+        }
+      }
+      &__recent-likes{
+        display: flex;
+        padding: 0.5rem;
+        padding-left: 1rem;
+        gap: .5rem;
+
+
+      }
+    }
+    &--post-date{
+        color: gray;
+        font-size: 1.4rem;
+
+    }
+    &__actions{
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 2rem;
+      &__action{
+        &--icon{
+            cursor: pointer;
+            width: 2.3rem;
+            height: 2.3rem;
+          &---reply{
+            background: url("../../../svgs/reply.svg");
+            background-size: contain;
+          }
+          &---retweet{
+            background: url("../../../svgs/retweet.svg");
+            background-size: contain;
+          }
+            &---like{
+                background: url("../../../svgs/like.svg");
+                background-size: contain;
+            }
+          &---liked{
+            background: url("../../../svgs/likeBlue.svg");
+            background-size: contain;
+          }
+        }
+      }
+    }
+  }
+
+
+}
+
+.overlay {
+  overflow: auto;
+  background: rgba(49,49,49,0.8);
+}
+body.active-modal {
+}
+
+.follow-btn{
+  padding: 1rem;
+  cursor: pointer;
+  background-color: vars.$primary;
+  width: 5rem;
+  align-self: center;
+  text-align: center;
+  margin-left: auto;
+  border-radius: 7px;
+  &:hover{
+    background-color: #8ea2ea;
+  }
+}
+
+.flip-engage-card{
+  position: relative;
+  perspective: 1000px;
+  width: 100%;
+  height: 100%;
+  &--inner{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+
+    &--flip{
+      transform: rotateY(180deg);
+    }
+  }
+}
+.flip-engage-card-front, .flip-engage-card-back{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.flip-engage-card-back{
+  transform: rotateY(180deg);
+}
+.comments{
+  margin-top: 8rem;
+}
+
