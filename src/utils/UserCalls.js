@@ -134,7 +134,7 @@ export function cancelFriendRequest(friendId){
 }
 
 export function fetchHotPosts(){
-    return fetch(`${process.env.ENV_MODE === 'development' ? `http://localhost:8080` : 'https://gossip-server-c6dd76b8a875.herokuapp.com/'}/posts/hottestPosts`, {
+    return fetch(`${process.env.ENV_MODE === 'development' ? `https://gossip-server-c6dd76b8a875.herokuapp.com/` : 'https://gossip-server-c6dd76b8a875.herokuapp.com/'}/posts/hottestPosts`, {
         method: 'GET',
         credentials: 'include',
         headers: {
