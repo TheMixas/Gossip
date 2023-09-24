@@ -115,12 +115,16 @@ function App() {
             </>}/>
 
             <Route path={"/notifications/"} element={<>
+
+                <Navbar/>
                 <NotifsPage/>
                 <CreatePostModal/>
                 <AuthModal/>
             </>}/>
 
-            <Route path={"/messages/"} element={<><Messages socket={socket}/>
+            <Route path={"/messages/"} element={<>
+                <Navbar/>
+                <Messages socket={socket}/>
                 <AuthModal/>
                 <CreatePostModal/>
                 <PostModal on={postPopup} swapState={togglePostPopup}/>
@@ -128,8 +132,9 @@ function App() {
 
             </>}/>
             {/*PROFILE*/}
-            <Route path={"/:username"} element={<><
-                ProfilePage contentType={"post"}
+            <Route path={"/:username"} element={<>
+                <Navbar/>
+                <ProfilePage contentType={"post"}
                             toggleUpdatePopup={toggleUpdateUserPopup}
                             showPostPopup={setPopupPostAndToggle}
             />
@@ -140,35 +145,41 @@ function App() {
                 <PostModal setPopupAndOpen={setPopupAndOpen}/>
                 </>}/>
             {/*ADD EVERY SINGLE MODAL HERE*/}
-            <Route path={"/:username/replies"} element={<><ProfilePage contentType={"post"}
+            <Route path={"/:username/replies"} element={<>
+                <Navbar/>
+                <ProfilePage contentType={"post"}
             showPostPopup={setPopupPostAndToggle}
 
             />
                 <CreatePostModal/>
                 <PostModal setPopupAndOpen={setPopupAndOpen}/>
             </>}/>
-            <Route path={"/:username/media"} element={<><ProfilePage contentType={"post"} showPostPopup={setPopupPostAndToggle}
-            />
+            <Route path={"/:username/media"} element={<>
+                <Navbar/>
+                <ProfilePage contentType={"post"} showPostPopup={setPopupPostAndToggle}/>
                 <CreatePostModal/>
                 <PostModal setPopupAndOpen={setPopupAndOpen}/>
                 /></>}/>
-            <Route path={"/:username/likes"} element={<><ProfilePage contentType={"post"}
-            showPostPopup={setPopupPostAndToggle}/>
+            <Route path={"/:username/likes"} element={<>
+                <Navbar/>
+                <ProfilePage contentType={"post"} showPostPopup={setPopupPostAndToggle}/>
                 <CreatePostModal/>
                 <PostModal setPopupAndOpen={setPopupAndOpen}/> </>}/>
-            <Route path={"/:username/friends"} element={<><ProfilePage contentType={"user"}
-                                                                         showPostPopup={setPopupPostAndToggle}
-            />
-
+            <Route path={"/:username/friends"} element={<>
+                <Navbar/>
+                <ProfilePage contentType={"user"}
+                                                                       showPostPopup={setPopupPostAndToggle}/>
                 <CreatePostModal/>
                 <PostModal setPopupAndOpen={setPopupAndOpen}/> </>}/>
 
             <Route path={"/users/no-user"} element={<>
+                <Navbar/>
                 <CreatePostModal/>
                 <NoAccount/>
                 <AuthModal/>
             </>}/>
             <Route path="*" element={<>
+                <Navbar/>
                 <CreatePostModal/>
                 <NotFound/>
                 <AuthModal/>

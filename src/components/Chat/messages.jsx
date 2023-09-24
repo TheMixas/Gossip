@@ -279,7 +279,7 @@ export default function Messages({socket}) {
     return (
         <>
 
-            <Navbar/>
+            {/*<Navbar/>*/}
             <div className="page__messages">
                 <div className="grid">
                     <div className="user-list">

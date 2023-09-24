@@ -6,7 +6,7 @@ export default function NoAccount(){
     const {toggleAuthPopup} = useContext(AuthModalContext)
     return(
         <>
-        <Navbar toggleAuthPopup={toggleAuthPopup}/>
+        {/*<Navbar toggleAuthPopup={toggleAuthPopup}/>*/}
         <div className="not-found">
             <div className="not-found--404">
                 <div className="not-found--404--img"/>

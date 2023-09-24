@@ -98,7 +98,7 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
     return(
         user ?
         <div className="page__profile">
-            <Navbar/>
+            {/*<Navbar/>*/}
             <div className="profile">
                 <div className="profile__banner">
                     <img src={`data:image/png;base64,${user.banner}`}alt="" className="profile__banner--img"/>

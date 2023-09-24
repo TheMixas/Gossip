@@ -5,7 +5,7 @@ export default function NotFound({toggleAuthPopup}){
     const navigate = useNavigate()
     return(
         <>
-            <Navbar toggleAuthPopup={toggleAuthPopup}/>
+            {/*<Navbar toggleAuthPopup={toggleAuthPopup}/>*/}
             <div className="not-found">
                 <div className="not-found--404">
                     <div className="not-found--404--img"/>

@@ -47,7 +47,7 @@ export default function NotifsPage({toggleAuthPopup, user={name:"Pablo"}}) {
 
     return(
         <div>
-            <Navbar toggleAuthPopup={toggleAuthPopup}/>
+            {/*<Navbar/>*/}
             <div className="page__notifs">
                 <div className="page__notifs__friend-request">
                     <div className="page__notifs__friend-request--header" onClick={handleFriendRequestClick}>
