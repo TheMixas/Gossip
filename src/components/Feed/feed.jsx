@@ -10,14 +10,12 @@ import {
     fetchHotPosts, fetchMostPopularUsers,
     fetchNamesAndAvatar,
     fetchOwnAvatar, fetchQueryUsersAndPosts,
-    fetchUserStats,
-    sendFriendRequest
+    fetchUserStats
 } from "../../utils/UserCalls";
-import {handleCreatePostForm} from "../../utils/PostCalls";
 import {getID, getName, getUsername} from "../../utils/Utils";
 import UserContainer from "./UserContainer";
 import {QueryContext} from "../context/search-users-and-posts.context";
-import {BarWave, Coin} from "react-cssfx-loading";
+import {Coin} from "react-cssfx-loading";
 import {AuthModalContext} from "../context/auth-pop-up.context";
 function Feed({showPostPopup}) {
     //CONTEXT:
@@ -46,7 +44,7 @@ function Feed({showPostPopup}) {
                 if(data.error) return 
                 setUserStats(data);
             })
-    })
+    },[])
     const getMostPopularUsers = useCallback(async () => {
         await fetchMostPopularUsers().then(res => res.json()).then(
             (data) => {
@@ -54,15 +52,17 @@ function Feed({showPostPopup}) {
                 if(data.error) return 
                 setMostPopularUsers(data.users);
             })
-    })
+    }, [])
 
     //NOTE: fetch everything on mount
     useEffect(() => {
-        getHotPosts().catch()
         getOwnNamesAndAvatars().catch()
         getOwnStats().catch()
         getMostPopularUsers().catch()
-    }, [])
+    }, [getMostPopularUsers, getOwnNamesAndAvatars, getOwnStats])
+    // useEffect(() => {
+    //     getHotPosts().catch()
+    // },[getHotPosts])
 
     //posts
     const [posts, setPosts] = useState([]);
@@ -84,34 +84,34 @@ function Feed({showPostPopup}) {
         post.created_at = Date.now();
         setPosts([post, ...posts])
     }
-
-    useEffect(() => {
-        
-        handleQuery().catch()
-    }, [query])
-    const handleQuery = async () => {
+    const handleQuery = useCallback (async () => {
 
         if(query === '' || query === undefined) {
-            
+
             setSearchedUsers([]);
             await fetchHotPosts().then(res => res.json()).then(
                 (data) => {
-                    
+                    console.log("Setting hot posts from handleQuery")
                     setPosts(data.hPosts);
                 }).catch()
             return;
 
         }
-
         await fetchQueryUsersAndPosts(query).then(res => res.json()).then(
             (data) => {
-                
-                if(data.error) return 
+
+                if(data.error) return
                 setSearchedUsers(data.queriedUsers);
                 setPosts(data.queriedPosts);
-            })
+            }
+            )
 
-    }
+    },[query])
+    useEffect(() => {
+        
+        handleQuery().catch()
+    }, [query,handleQuery])
+
 
 
 

@@ -22,9 +22,9 @@ export default function ProfilePostContainer({user, showPopup}) {
     return (
         <div>
             <div className="profile__body__center__header">
-            <NavLink exact to={`/${user?.username}`} active className="profile__body__center__header--text navlink" end>Tweets</NavLink>
-            <NavLink exact to={`/${user?.username}/replies`} className="profile__body__center__header--text navlink">Retweets</NavLink>
-            <NavLink exact to={`/${user?.username}/media`} className="profile__body__center__header--text navlink">Media</NavLink>
+            <NavLink exact="true" to={`/${user?.username}`} active="true" className="profile__body__center__header--text navlink" end>Tweets</NavLink>
+            <NavLink exact="true" to={`/${user?.username}/replies`} className="profile__body__center__header--text navlink">Retweets</NavLink>
+            <NavLink exact="true" to={`/${user?.username}/media`} className="profile__body__center__header--text navlink">Media</NavLink>
             </div>
             <div className="profile__body__center__body">
                 {

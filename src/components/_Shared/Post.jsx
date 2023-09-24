@@ -8,9 +8,7 @@ import TimeAgo from 'javascript-time-ago'
 import './../../scss/typography.scss'
 
 export default function Post({showPopup,post}) {
-    //NOTE: SETUP TIME AGO
-    //NOTE: USED FOR POSTED_AT TIME
-    TimeAgo.addDefaultLocale(en)
+
 
 
     
@@ -36,7 +34,7 @@ export default function Post({showPopup,post}) {
                 setRetweetedPost(res)
             })
         }
-    },[getRetweetedPost])
+    },[post.original_post_id, post.isRetweet, getRetweetedPost])
 
     const [retweetedPost, setRetweetedPost] = useState(null)
     const [likes, setLikes] = useState(post.stats?.likes)
@@ -51,7 +49,10 @@ export default function Post({showPopup,post}) {
                 <div className="post__header__info">
                     <a href="" className="post__header__info--name post-name-text">{post.name}</a>
                 </div>
-                <ReactTimeAgo date={post?.created_at || 0} locale="en"/>
+                {post?.created_at
+                &&
+                <ReactTimeAgo date={post.created_at} locale="en"/>
+                }
 
             </div>
 

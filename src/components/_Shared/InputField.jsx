@@ -107,10 +107,9 @@ export default function InputField({text="What`s up?",buttonText="Post",isMessag
                     }}
                                className=" text--medium--bold create-tweet__input" placeholder={text}
                               style={ isMessage || isRetweet || isComment ? {height: '5rem'} : {height:'10rem'}}
+                              value={textArea}
 
-                    >
-                    {textArea}
-                    </textarea>
+                    />
                     <div className="create-tweet__actions">
                         <label className="create-tweet__media-container">
                             <div className="create-tweet__media"></div>

@@ -62,11 +62,11 @@ export default function RecommendedUsers({title,users=[]}) {
                 </div>
             </div>
             <div className="who-to-follow__body">
-                {users.map(user => {
+                {users.map((user,index) => {
                     let addBtnText = user?.isFriend ? 'Friend added' : 'Add friend';
                     if(user?.isFriendRequestSent) addBtnText = 'Request sent';
                     return(
-                        <div className="who-to-follow__body__user">
+                        <div key={index} className="who-to-follow__body__user">
                             <SmallAvatar src={`data:image/jpeg;base64,${user?.avatar}`}/>
                             <div className="who-to-follow__body__user__info">
                                 <div className="who-to-follow__body__user__info__text">

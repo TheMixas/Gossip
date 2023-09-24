@@ -109,7 +109,7 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
                     </div>
                     <div className="profile__nav__links">
                         <div className="profile__nav__links__link">
-                            <NavLink exact to={`/${params.username}`} className="profile__nav__links__link--text navlink" end>Tweets</NavLink>
+                            <NavLink exact="true" to={`/${params.username}`} className="profile__nav__links__link--text navlink" end>Tweets</NavLink>
                             <NavLink to={`/${params.username}`} className="profile__nav__links__link--number navlink" end>{user.posts.length||0}</NavLink >
                         </div>
                         <div className="profile__nav__links__link">

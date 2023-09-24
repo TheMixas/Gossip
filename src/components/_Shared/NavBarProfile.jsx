@@ -40,7 +40,7 @@ function NavBarProfile(){
                 }).catch(err => console.log(err))
             //print
             setBanner(bannerUrl);
-    })
+    },[])
     useEffect(  () => {
         fetchAvatar().catch(err => 
         fetchBanner().catch(err => console.log(err)))
