@@ -2,6 +2,7 @@ import {isAuthenticated} from "./AuthCalls";
 import {getID} from "./Utils";
 let api = process.env.NODE_ENV === 'production' ? 'https://goossipclientstg-30cd4ca2f0fc.herokuapp.com' : 'http://localhost:8080';
 console.log("api: ", api)
+console.log("process.env.NODE_ENV: ", process.env.NODE_ENV)
 export function fetchOwnAvatar(){
     if (!isAuthenticated()) return undefined;
 
