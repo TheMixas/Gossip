@@ -1,5 +1,6 @@
 import {isAuthenticated} from "./AuthCalls";
 import {getID} from "./Utils";
+let api = process.env.NODE_ENV === 'production' ? 'https://goossipclientstg-30cd4ca2f0fc.herokuapp.com' : 'http://localhost:8080';
 
 export function fetchOwnAvatar(){
     if (!isAuthenticated()) return undefined;
@@ -134,7 +135,7 @@ export function cancelFriendRequest(friendId){
 }
 
 export function fetchHotPosts(){
-    return fetch(`https://gossip-server-c6dd76b8a875.herokuapp.com/posts/hottestPosts`, {
+    return fetch(`${api}/posts/hottestPosts`, {
         method: 'GET',
         credentials: 'include',
         headers: {
