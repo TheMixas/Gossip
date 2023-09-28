@@ -49,9 +49,6 @@ function App() {
         }).catch(e => console.log(e))
     })
 
-    useEffect(()=>{
-        
-    },[popUpPostRecentLikers])
 
     //2
 
@@ -94,7 +91,10 @@ function App() {
         await getAndSetRetweetedPost(post.original_post_id)
         setPopup(true)
     }
-
+    useEffect(()=>{
+        console.log("process.env.NODE_ENV: ", process.env.REACT_APP_REACT_ENV)
+        console.log("process.env.REACT_APP_1", process.env.REACT_APP_1)
+    },[])
 
     //TODO: DISABLE AUTO AUTH POPUP WHEN USER IS LOGGED IN
 
