@@ -280,18 +280,18 @@ function FeedComponent(){
             <div className="center-block cell">
                 <InputField border={inputBorderColor} color={inputColor} onSuccess={handleAddPost} />
                 <div className="timeline">
-                    {searchedUsers.length <=0 && posts.length <= 0 &&
+                    {searchedUsers.length <=0 && posts?.length <= 0 &&
                         <div className={"timeline--loading-container"}>
                             <Coin color={"#7b92e5"} height={"15rem"} width={"15rem"}/>
                         </div>
 
                     }
-                    {searchedUsers.map(user =>{
+                    {searchedUsers?.map(user =>{
                         return <UserContainer key={user.id}
                                               user={user}
                         />
                     })}
-                    {posts.map(post => <Post key={post.id}
+                    {posts?.map(post => <Post key={post.id}
                                              showPopup={showPostPopup}
                                              post={post}
                     />)}
