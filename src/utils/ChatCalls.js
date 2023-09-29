@@ -1,6 +1,8 @@
 //fetch user conversations
+import {apiURL} from "../api";
+
 export function fetchUserConversations() {
-  return fetch("http://localhost:8080/chat/get-conversations", {
+  return fetch(`${apiURL}/chat/get-conversations`, {
     method: "GET",
     credentials: "include",
     headers: {
@@ -10,7 +12,7 @@ export function fetchUserConversations() {
 }
 
 export function fetchSuggestedFriends() {
-  return fetch("http://localhost:8080/users/suggested-friends", {
+  return fetch(`${apiURL}/users/suggested-friends`, {
     method: "GET",
     credentials: "include",
     headers: {
@@ -19,7 +21,7 @@ export function fetchSuggestedFriends() {
   })
 }
 export function fetchFullConversation(conversationId) {
-  return fetch(`http://localhost:8080/chat/get-private-conversation/${conversationId}`, {
+  return fetch(`${apiURL}/chat/get-private-conversation/${conversationId}`, {
     method: "GET",
     credentials: "include",
     headers: {

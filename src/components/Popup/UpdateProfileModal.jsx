@@ -3,6 +3,7 @@ import './SCSS/update-profile-modal.scss'
 
 import defaultBanner from "./../../imgs/banner.png"
 import defaultAvatar from "./../../imgs/defaultAvatar.png"
+import {apiURL} from "../../api";
 
 export default function UpdateProfileModal({on=true, swapState}) {
     if(on){
@@ -37,7 +38,7 @@ export default function UpdateProfileModal({on=true, swapState}) {
                                 <span onClick={swapState} className="container__header--close-btn">x</span>
                                 <h1 className="container__header--title">Update your profile.</h1>
                             </div>
-                            <form action={"http://localhost:8080/users/update"} className="container__form" method="post"  encType="multipart/form-data">
+                            <form action={`${apiURL}/users/update`} className="container__form" method="post"  encType="multipart/form-data">
                                 {/*<div className="container__form__inputs">*/}
                                     <label className="container__form__inputs__labels--banner">
                                         <div className="container__form__inputs__labels--banner--button"

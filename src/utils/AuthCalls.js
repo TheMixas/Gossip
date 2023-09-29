@@ -1,10 +1,12 @@
+import {apiURL} from "../api";
+
 export function isAuthenticated(){
     
     return !!localStorage.getItem('gossip_user');
 }
 export function register(info={}, toggleAuthPopUp){
     
-fetch('http://localhost:8080/users/register', {
+fetch(`${apiURL}/users/register`, {
         method: 'POST',
         body: JSON.stringify(info),
         credentials: 'include',
@@ -29,7 +31,7 @@ fetch('http://localhost:8080/users/register', {
 }
 export function login(info={},toggleAuthPopUp){
     
-    fetch('http://localhost:8080/users/login', {
+    fetch(`${apiURL}/users/login`, {
         method: 'POST',
         body: JSON.stringify(info),
         credentials: 'include',
@@ -55,7 +57,7 @@ export function login(info={},toggleAuthPopUp){
 
 export async function logout() {
     //call api to logout
-    await fetch(`http://localhost:8080/users/logout`, {
+    await fetch(`${apiURL}/users/logout`, {
         method: 'POST',
         credentials: 'include',
         headers: {

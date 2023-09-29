@@ -10,7 +10,7 @@ export function fetchOwnAvatar(){
     if (!isAuthenticated()) return undefined;
 
     //call api to logout
-    return fetch(`http://localhost:8080/users/avatar`, {
+    return fetch(`${apiURL}/users/avatar`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -19,7 +19,7 @@ export function fetchOwnAvatar(){
     })
 }
 export function amIAuthenticated(){
-    return fetch(`http://localhost:8080/users/authenticated`, {
+    return fetch(`${apiURL}/users/authenticated`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -31,7 +31,7 @@ export function fetchOwnBanner(){
     if (!isAuthenticated()) return undefined;
 
     //call api to logout
-    return fetch(`http://localhost:8080/users/banner`, {
+    return fetch(`${apiURL}/users/banner`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -42,7 +42,7 @@ export function fetchOwnBanner(){
 export function fetchMiniProfile(userId){
 
     //call api to logout
-    return fetch(`http://localhost:8080/${userId}/mini-profile`, {
+    return fetch(`${apiURL}/${userId}/mini-profile`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -55,7 +55,7 @@ export function fetchMiniProfile(userId){
 export function fetchQueryUsersAndPosts(query){
 
     //call api to logout
-    return fetch(`http://localhost:8080/search/${query}`, {
+    return fetch(`${apiURL}/search/${query}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -71,7 +71,7 @@ export function fetchFriendRequests(){
     if (!isAuthenticated()) return undefined;
 
     //call api to logout
-    return fetch(`http://localhost:8080/friendrequests`, {
+    return fetch(`${apiURL}/friendrequests`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -84,7 +84,7 @@ export function acceptFriendRequest(friendId){
     if (!isAuthenticated()) return undefined;
 
     //call api to logout
-    return fetch(`http://localhost:8080/friendrequests/accept`, {
+    return fetch(`${apiURL}/friendrequests/accept`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -98,7 +98,7 @@ export function rejectFriendRequest(rejectectedId){
     if (!isAuthenticated()) return undefined;
 
     //call api to logout
-    return fetch(`http://localhost:8080/friendrequests/reject`, {
+    return fetch(`${apiURL}/friendrequests/reject`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -114,7 +114,7 @@ export function sendFriendRequest(friendId){
 if (!isAuthenticated()) return undefined;
 
     //call api to logout
-    return fetch(`http://localhost:8080/friendrequests/send`, {
+    return fetch(`${apiURL}/friendrequests/send`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -128,7 +128,7 @@ export function cancelFriendRequest(friendId){
         if (!isAuthenticated()) return undefined;
 
         //call api to logout
-        return fetch(`http://localhost:8080/friendrequests/cancel`, {
+        return fetch(`${apiURL}/friendrequests/cancel`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -154,7 +154,7 @@ export function likePost(postId){
 
     //print post id
     
-   return fetch(`http://localhost:8080/posts/like`, {
+   return fetch(`${apiURL}/posts/like`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -172,7 +172,7 @@ export function unlikePost(postId){
 
         //print post id
         
-    return fetch(`http://localhost:8080/posts/unlike`, {
+    return fetch(`${apiURL}/posts/unlike`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -183,7 +183,7 @@ export function unlikePost(postId){
 }
 //fetch a post
 export function fetchPost(postId){
-    return fetch(`http://localhost:8080/posts/getPost/${postId}`, {
+    return fetch(`${apiURL}/posts/getPost/${postId}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -195,7 +195,7 @@ export function fetchPost(postId){
 //fetch users avatar
 export function fetchAvatar(userId){
     
-return fetch(`http://localhost:8080/users/${userId}/avatar`, {
+return fetch(`${apiURL}/users/${userId}/avatar`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -207,7 +207,7 @@ return fetch(`http://localhost:8080/users/${userId}/avatar`, {
 
 
 export function fetchProfile(username){
-    return fetch(`http://localhost:8080/users/${username}/${getID()}`, {
+    return fetch(`${apiURL}/users/${username}/${getID()}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -218,7 +218,7 @@ export function fetchProfile(username){
 
 export function fetchNamesAndAvatar(id){
     
-    return fetch(`http://localhost:8080/${id}/namesandavatar`, {
+    return fetch(`${apiURL}/${id}/namesandavatar`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -229,7 +229,7 @@ export function fetchNamesAndAvatar(id){
 
 //Get user stats
 export function fetchUserStats(userId){
-    return fetch(`http://localhost:8080/${userId}/stats`, {
+    return fetch(`${apiURL}/${userId}/stats`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -239,7 +239,7 @@ export function fetchUserStats(userId){
 }
 
 export function fetchMostPopularUsers(){
-    return fetch(`http://localhost:8080/users/mostPopular`, {
+    return fetch(`${apiURL}/users/mostPopular`, {
         method: 'GET',
         credentials: 'include',
         headers: {

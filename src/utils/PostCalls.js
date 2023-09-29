@@ -1,4 +1,5 @@
 // post a post
+import {apiURL} from "../api";
 export async function handleCreatePostForm(e,textArea,images=[],isComment=false,originalPostId=undefined,isRetweet=false,){
     //NOTE: returns a promise
     
@@ -18,7 +19,7 @@ export async function handleCreatePostForm(e,textArea,images=[],isComment=false,
 
     //print ogPostId
 
-    return  fetch(`http://localhost:8080/posts/post`, {
+    return  fetch(`${apiURL}/posts/post`, {
         method: 'POST',
         credentials: 'include',
         body: formData
@@ -34,7 +35,7 @@ export async function handleGetPostComments(postId,limit=100,offset=0){
         offset: offset
     }
 
-    return await fetch(`http://localhost:8080/posts/comments`, {
+    return await fetch(`${apiURL}/posts/comments`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -64,7 +65,7 @@ export async function handleGetPostRecentLikers(postId,limit=100,offset=0){
         offset: offset
     }
     
-    return await fetch(`http://localhost:8080/posts/recentLikers`, {
+    return await fetch(`${apiURL}/posts/recentLikers`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -88,7 +89,7 @@ export async function handleGetPostRecentLikers(postId,limit=100,offset=0){
 export async function handleGetPost(postID){
 
 
-    return await fetch(`http://localhost:8080/posts/getPost/${postID}`, {
+    return await fetch(`${apiURL}/posts/getPost/${postID}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
