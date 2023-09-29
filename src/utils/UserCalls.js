@@ -139,7 +139,7 @@ export function cancelFriendRequest(friendId){
 }
 
 export function fetchHotPosts(){
-    console.log("calling fetch hot posts from api: " + api)
+    console.log("calling fetch hot posts from api: " + apiURL)
     return fetch(`${apiURL}/posts/hottestPosts`, {
         method: 'GET',
         credentials: 'include',
