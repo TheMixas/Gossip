@@ -1,8 +1,8 @@
 import {isAuthenticated} from "./AuthCalls";
 import {getID} from "./Utils";
 import {useEffect} from "react";
-let api = process.env.REACT_APP_REACT_ENV === 'production' ? 'https://goossipclientstg-30cd4ca2f0fc.herokuapp.com' : 'http://localhost:8080';
-console.log("api: ", api)
+import {apiURL} from "../api";
+console.log("apiURL: ", apiURL)
 console.log("process.env.NODE_ENV in utils js: ", process.env.REACT_APP_REACT_ENV)
 console.log("process.env.REACT_APP_1 in utils js", process.env.REACT_APP_1)
 
