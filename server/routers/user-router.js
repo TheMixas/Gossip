@@ -18,33 +18,31 @@ import {
     checkIfFriends,
     getMostPopularUsers,
     getUsersByQuery,
-    getUserMiniProfile
+    getUserMiniProfile, getOwnMiniProfile
 } from "../db/user-db.js";
-import {getPostsByQuery, getPostsLikes} from "../db/post-db.js";
+import {getPostsByQuery} from "../db/post-db.js";
 import jwt from "jsonwebtoken";
 import dayjs from "dayjs";
 const router = express.Router()
 
 import path from 'path';
 import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
 
-const __dirname = path.dirname(__filename);
-const userAvatarsDir = `C:\\Users\\themi\\WebstormProjects\\Gossip\\server\\`+`/user_images/`
+
 
 import {checkToken, verifyToken} from "../middleware/auth.js";
 import * as fs from "fs";
 import multer from "multer";
 import {createPrivateConversation} from "../db/conversation-db.js";
-import {getQueriedPosts} from "../db/database.js";
+import {userAvatarsDir} from "../app.js";
 function fileFilter (req, file, cb) {
 
-    console.log("filtering file")
+    
     if(file.mimetype !== 'image/png' && file.mimetype !== 'image/jpg' && file.mimetype !== 'image/jpeg'){
-        console.log("file is not an image that we accept")
+        
         cb(null, false)
     }else{
-        console.log("file is an image that we accept")
+        
         cb(null, true)
     }
 }
@@ -79,7 +77,7 @@ router.get('/users/authenticated', verifyToken,async (req,res) =>{
             return res.status(401).send()
         }
     }catch (e){
-        console.log(e)
+        
         return res.status(401).send()
     }
 
@@ -87,46 +85,55 @@ router.get('/users/authenticated', verifyToken,async (req,res) =>{
 
 //CREATE USER / register
 router.post('/users/register', async (req,res) =>{
-    const {username,status,email,password} = req.body
-    let user;
-    console.log("received register request")
+    const {username,name,email,password} = req.body
     console.log("req.body: ", req.body)
-    console.log("username: ", username)
+    let user;
+    console.log(1)
+    
+    
     if(!username || !email || !password){
         return res.status(401).send({error:"missing fields"})
     }
     if(!validator.isEmail(email)){
         return res.status(402).send({error:"invalid email"})
     }
+    console.log(2)
+
 
     //check if user exists
     await getUserByEmail(email).then((_user) => {
         user = _user
     })
+    console.log(3)
+
     if(user){
-        console.log("user already exists, returning 400")
+        
         return res.status(400).send({error:"user already exists"})
     }
+    console.log(4)
+
 
     let encryptedPassword = await bcrypt.hash(password, 10)
 
-    console.log("encryptedPassword: ", encryptedPassword)
+
+    console.log(5)
 
 
     try{
-        user = await createUser(username,status,email,encryptedPassword)
-
+        user = await createUser(username,name,email,encryptedPassword)
+        console.log(6)
         const token = jwt.sign({
             id: user.id},
             process.env.JWT_SECRET,
             {expiresIn: "7d"}
         )
-        res.set("Set-Cookie", `token1=${token}; HttpOnly; Path=/; SameSite=Lax; Secure=true; max-age=1209600;`)
-
+        console.log(7)
+        res.set("Set-Cookie", `token1=${token}; HttpOnly; Path=/; SameSite=None; Secure; max-age=1209600;`)
+        console.log(8)
         return res.status(201).send(user)
     }catch (e){
-        console.log("error: ", e)
-        return res.status(500).send({error : e})
+        
+        return res.status(500).send(e)
     }
 
 
@@ -134,14 +141,15 @@ router.post('/users/register', async (req,res) =>{
 
 //LOGIN
 router.post('/users/login', async (req,res) =>{
-    console.log("received login request")
-    console.log("req.body: ", req.body)
+    
+    
     const {password, credentials} = req.body
+    console.log("req.body: ", req.body)
 
 
 
     if(!credentials || !password){
-        console.log("missing fields, returning 400")
+        
         return res.status(400).send({error:"missing fields"})
     }
     let user;
@@ -164,11 +172,11 @@ router.post('/users/login', async (req,res) =>{
     //check if password is correct
 
     const isMatch = await bcrypt.compare(password, user.password)
-    console.log("password: ", password)
-    console.log("user.password: ", user.password)
+    
+    
 
     if(!isMatch){
-        console.log("password wrong, returning 400")
+        
         return res.status(400).send({error:"password is incorrect"})
     }
 
@@ -187,14 +195,14 @@ router.post('/users/login', async (req,res) =>{
     let time = now.getTime();
     let expireTime = time + 1000 * 360000;
     now.setTime(expireTime);
-    res.set("Set-Cookie", `token1=${token}; HttpOnly; Path=/; SameSite=Lax; Secure=true; expires=${now.toUTCString()};`)
+    res.set("Set-Cookie", `token1=${token}; HttpOnly; Path=/; expires=${now.toUTCString()};`)
     return res.status(200).send(user)
 })
 
 //LOGOUT
 router.post('/users/logout', verifyToken,async (req,res) =>{
-    console.log("received logout request")
-    res.set("Set-Cookie", `token1=rubbish; HttpOnly; Path=/; SameSite=Lax; Secure=true; expires=${dayjs().toDate()};`)
+    
+    res.set("Set-Cookie", `token1=rubbish; HttpOnly; Path=/; SameSite=None; Secure; expires=${dayjs().toDate()};`)
     return res.status(200).send("logged out")
 
 })
@@ -212,14 +220,14 @@ router.get('/users/avatar', verifyToken, async (req,res) =>{
         }
         if(!fs.existsSync(avatarFilePath)){
             //print
-            console.log("avatar not found")
+            
             return res.status(404).send({error:"avatar not found"})
         }
 
         let avatar = fs.readFileSync(avatarFilePath).toString('base64')
         return res.status(200).send({avatar})
     }catch (e){
-        console.log("error: ", e)
+        
         return res.status(500).send({error : e})
     }
 
@@ -228,10 +236,10 @@ router.get('/users/avatar', verifyToken, async (req,res) =>{
 router.get('/users/:id/avatar', async (req,res) =>{
 
     //print
-    console.log("params: ", req.params)
+    console.log("received request at /users/:id/avatar")
     let user = await getUserById(req.params.id)
     if(!user){
-        console.log("user not found")
+        
         return res.status(404).send({error:"user not found"})
     }
     let avatarFilePath = userAvatarsDir + user.avatarPath
@@ -240,19 +248,19 @@ router.get('/users/:id/avatar', async (req,res) =>{
     }
     if(!fs.existsSync(avatarFilePath)){
         //print
-        console.log("avatar not found")
+        
         return res.status(404).send({error:"avatar not found"})
     }
 
     await fs.readFile(avatarFilePath, (err, data) =>{
         if(err){
-            // console.log("error: ", err)
+            // 
             return res.status(500).send({error:err})
         }else{
             res.setHeader('Content-Type', 'image/png')
             return res.status(200).send(data)
         }
-        // console.log("data: ", data)
+        // 
     })
 })
 
@@ -270,13 +278,13 @@ router.get('/users/banner', verifyToken, async (req,res) =>{
         }
         if(!fs.existsSync(avatarFilePath)){
             //print
-            console.log("banner not found")
+            
             return res.status(404).send({error:"banner not found"})
         }
         let banner = fs.readFileSync(avatarFilePath).toString('base64')
         return res.status(200).send({banner})
     }catch (e){
-        console.log("error: ", e)
+        
         return res.status(500).send({error : e})
     }
 
@@ -285,16 +293,16 @@ router.get('/users/banner', verifyToken, async (req,res) =>{
 
 //update user
 router.post('/users/update', verifyToken,upload.fields([{name:'banner', maxCount:1}, {name:'avatar', maxCount: 1}]), async (req,res) =>{
-    console.log("received update request")
+    
     //print req
-    console.log("req.body: ", req.body)
-    console.log("req.body: ", req.body)
+    
+    
 
     try{
         const isMatch = await bcrypt.compare(req.body.oldPassword, req.user.password)
 
         if(!isMatch){
-            console.log("password wrong, returning 400")
+            
             return res.status(400).send({error:"password is incorrect"})
         }
 
@@ -319,6 +327,11 @@ router.post('/users/update', verifyToken,upload.fields([{name:'banner', maxCount
         for (let i = 0; i < Object.keys(req.body).length; i++) {
             const key = Object.keys(req.body)[i];
             if(req.body[key] !== "" && allowedUpdates.includes(key)){
+                //ecrypt password
+                if(key === "password"){
+                    updates[key] = await bcrypt.hash(req.body[key], 8)
+                    continue
+                }
                 updates[key] = req.body[key]
             }
         }
@@ -326,7 +339,7 @@ router.post('/users/update', verifyToken,upload.fields([{name:'banner', maxCount
 
         await updateUser(req.user.id,updates)
     }catch(e){
-        console.log("error: ", e)
+        
         return res.status(500).send({error : e})
     }
     return res.status(200).send("user updated")
@@ -343,7 +356,7 @@ router.get('/users/:username/:ourID', async (req,res) =>{
         return res.status(200).send(userProfile)
 
     }catch (e) {
-        console.log("error: ", e)
+        
         return res.status(500).send({error:e})
     }
 })
@@ -355,6 +368,7 @@ router.post('/users/testToken', verifyToken,async (req,res) =>{
 })
 //get username from id
 router.get('/users/:id/username', async (req,res) =>{
+    console.log("received request at /users/:id/username")
     let user = await getUserById(req.params.id)
     if(!user){
         return res.status(404).send({error:"user not found"})
@@ -364,10 +378,17 @@ router.get('/users/:id/username', async (req,res) =>{
 
 //NOTE: Get most popular users:
 router.get('/users/mostPopular', checkToken,async (req,res) =>{
-    console.log("received get popular users request")
-    let users = await getMostPopularUsers(10,req.user?.id)
+    
+    let users = await getMostPopularUsers(6,req.user?.id)
     if(!users){
         return res.status(404).send({error:"users not found"})
+    }
+    for (let i = 0; i < users.length; i++) {
+        users[i].avatar = fs.readFileSync(userAvatarsDir + users[i].avatarPath).toString("base64")
+        users[i].avatarPath = undefined
+
+        users[i].banner = fs.readFileSync(userAvatarsDir + users[i].bannerPath).toString("base64")
+        users[i].bannerPath = undefined
     }
     return res.status(200).send({users})
 })
@@ -377,18 +398,24 @@ router.get('/users/mostPopular', checkToken,async (req,res) =>{
 
 //NOTE: get usernames, and avatar
 router.get('/:id/namesandavatar', async (req,res) =>{
-    console.log("received get user names and avatar req")
-    let user = await getUserById(req.params.id,"username, avatarPath, bannerPath, name")
-    console.log("params: ", req.params)
-    if(!user){
-        console.log("user not found")
-        return res.status(404).send({error:"user not found"})
+
+    try{
+        console.log("received request, contents: ", req.params.id)
+        let user = await getUserById(req.params.id,"username, avatarPath, bannerPath, name")
+
+        if(!user){
+
+            return res.status(404).send({error:"user not found"})
+        }
+        //append avatar base64 to user object
+        user.avatar = fs.readFileSync(userAvatarsDir + user.avatarPath).toString('base64')
+        user.banner = fs.readFileSync(userAvatarsDir + user.bannerPath).toString('base64')
+
+        return res.status(200).send({user})
+    }catch (e) {
+
+        return res.status(500).send({error: e})
     }
-    //append avatar base64 to user object
-    user.avatar = fs.readFileSync(userAvatarsDir + user.avatarPath).toString('base64')
-    user.banner = fs.readFileSync(userAvatarsDir + user.bannerPath).toString('base64')
-    console.log("user: ", user)
-    return res.status(200).send({user})
 })
 
 router.get('/:id/mini-profile', checkToken, async (req,res) =>{
@@ -399,15 +426,30 @@ router.get('/:id/mini-profile', checkToken, async (req,res) =>{
     }
     //append avatar base64 to user object
     let miniProfile = await getUserMiniProfile( req.user?.id,user.id)
-    console.log("miniProfile: ", miniProfile)
+    
     return res.status(200).send({miniProfile})
+})
+router.get('/own-mini-profile', verifyToken, async (req,res) =>{
+    console.log("received request")
+    try{
+        let miniProfile = await getOwnMiniProfile(req.user.id)
+        if(!miniProfile){
+            return res.status(404).send({error:"user not found"})
+        }
+        //append image based on path
+        miniProfile.avatar = fs.readFileSync(userAvatarsDir + miniProfile.avatarPath).toString('base64')
+        miniProfile.banner = fs.readFileSync(userAvatarsDir + miniProfile.bannerPath).toString('base64')
+        return res.status(200).send({miniProfile})
+    }catch (e) {
+        return res.status(500).send({error:e})
+    }
 })
 
 
 
 //get friend requests
 router.get('/friendrequests',verifyToken, async (req,res) =>{
-    console.log("received get friend requests req")
+    
     let user = req.user
     if(!user){
         return res.status(404).send({error:"user not found"})
@@ -415,10 +457,10 @@ router.get('/friendrequests',verifyToken, async (req,res) =>{
 
     let friendRequests = await getFriendRequests(user.id)
     for (let friendRequest of friendRequests) {
-        console.log("friendRequest: ", friendRequest)
-        console.log("friendRequest.sender_user_id: ", friendRequest.sender_user_id)
+        
+        
         let requester = await getUserById(friendRequest.sender_user_id, "avatarPath, name, username")
-        console.log("requester: ", requester)
+        
         friendRequest.avatar = fs.readFileSync(userAvatarsDir + requester.avatarPath).toString('base64')
         friendRequest.name = requester.name
         friendRequest.username = requester.username
@@ -431,13 +473,13 @@ router.get('/friendrequests',verifyToken, async (req,res) =>{
 //Get user stats
 router.get('/:id/stats', async (req,res) =>{
     try{
-        console.log("received get user stats req")
+        
         let stats = await getUserStats(req.params.id)
         //append stats
-        console.log("stats: ",stats)
+        
         return res.status(200).send(stats)
     }catch (e) {
-        console.log("error: ", e)
+        
         return res.status(500).send({error:e})
     }
 
@@ -447,17 +489,17 @@ router.get('/:id/stats', async (req,res) =>{
 //GET queried results
 router.get('/search/:query', checkToken,async (req,res) =>{
     try{
-        console.log("received search req")
+        console.log("received request at /search/:query")
         let queriedPosts = await getPostsByQuery(req.params.query,99,0,req.user?.id)
         let queriedUsers = await getUsersByQuery(req.params.query,99,0,req.user?.id)
 
-        // console.log("queriedPosts: ",queriedPosts)
-        console.log("queriedUsers: ",queriedUsers)
+        // 
+        
 
         return res.status(200).send({queriedPosts,queriedUsers})
     }
     catch (e) {
-        console.log("error: ", e)
+        
         return res.status(500).send({error:e})
     }
 
@@ -468,8 +510,8 @@ router.get('/search/:query', checkToken,async (req,res) =>{
 
 //SEND FRIEND REQUEST
 router.post('/friendrequests/send', verifyToken, async (req,res) =>{
-    console.log("received send friend request req")
-    console.log("req.body: ", req.body)
+    
+    
     let user = req.user
     if(!user){
         return res.status(404).send({error:"user not found"})
@@ -495,14 +537,14 @@ router.post('/friendrequests/send', verifyToken, async (req,res) =>{
         await sendFriendRequest(user.id, req.body.receiver_user_id)
         return res.status(200).send("friend request sent")
     }catch (e) {
-        console.log("error: ", e)
+        
         return res.status(500).send({error:e})
     }
 })
 
 //CANCEL FRIEND REQUEST
 router.post('/friendrequests/cancel', verifyToken, async (req,res) =>{
-    console.log("received cancel friend request req")
+    
     let user = req.user
     if(!user){
         return res.status(404).send({error:"user not found"})
@@ -517,7 +559,7 @@ router.post('/friendrequests/cancel', verifyToken, async (req,res) =>{
         await deleteFriendRequest(user.id, req.body.receiver_user_id)
         return res.status(200).send("friend request cancelled")
     }catch (e) {
-        console.log("error: ", e)
+        
         return res.status(500).send({error:e})
     }
 })
@@ -525,7 +567,7 @@ router.post('/friendrequests/cancel', verifyToken, async (req,res) =>{
 //ACCEPT FRIEND REQUEST
 
 router.post('/friendrequests/accept', verifyToken, async (req,res) =>{
-    console.log("received accept friend request req")
+    
     let user = req.user
     if(!user){
         return res.status(404).send({error:"user not found"})
@@ -551,15 +593,15 @@ router.post('/friendrequests/accept', verifyToken, async (req,res) =>{
 
         return res.status(200).send("friend request accepted")
     }catch (e) {
-        console.log("error: ", e)
+        
         return res.status(500).send({error:e})
     }
 })
 
 //REJECT FRIEND REQUEST
 router.post('/friendrequests/reject', verifyToken, async (req,res) =>{
-    console.log("received reject friend request req")
-    console.log("req.body: ", req.body)
+    
+    
     let user = req.user
     if(!user){
         return res.status(404).send({error:"user not found"})
@@ -570,7 +612,7 @@ router.post('/friendrequests/reject', verifyToken, async (req,res) =>{
 
         return res.status(200).send("friend request rejected")
     }catch (e) {
-        console.log("error: ", e)
+        
         return res.status(500).send({error:e})
     }
 })

@@ -1,7 +1,8 @@
 import fs from "fs";
-const messageImagesDir = `C:\\Users\\themi\\WebstormProjects\\Gossip\\server\\`+`/message_imgs/`
+import {messageImagesDir} from './app.js'
 
 export async function storeFile(body) {
+    console.log("storing file: ", body)
     //INFO: RETURNS -> fileName
     //NOTE: initialize date tools
     let date_ob = new Date();
@@ -16,7 +17,7 @@ export async function storeFile(body) {
         await fs.writeFileSync(filePath, base64Image, {encoding: 'base64'})
 
     } catch (e) {
-        console.log("error while writing to file:", e)
+        console.log("error storing file: ", e)
     }
     return fileName
 }

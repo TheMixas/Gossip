@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/server/db/big-queries/queryHottestPosts.js" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/server/db/conversation-db.js" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/server/db/database.js" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/server/db/post-db.js" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/server/db/user-db.js" dialect="GenericSQL" />
+    <file url="PROJECT" dialect="MySQL" />
   </component>
 </project>

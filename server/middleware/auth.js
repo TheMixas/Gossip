@@ -7,23 +7,25 @@ const config = process.env
 
  export  const verifyToken = async (req, res, next) => {
      let cookies = parseCookies(req)
-        // console.log("cookies: ", cookies)
+        // 
      if (cookies.token1 === undefined) {
-         return res.status(401).send("missing cookie")
+         return res.status(402).send("missing cookie")
      }
 
 
-     // console.log("token1: ", cookies.token1)
+     // 
      try {
          const decoded = jwt.verify(cookies.token1, config.JWT_SECRET)
+         console.log("calling getUserById from verifyToken")
          const user = await getUserById(decoded.id)
+
          if (!user) {
              return res.status(401).send("invalid token (!user)")
          }
          req.user = user
-         // console.log("user: ", user)
+         // 
      } catch (e) {
-         return res.status(401).send("invalid token, error: " + e)
+         return res.status(403).send("invalid token, error: " + e)
      }
 
      return next()
@@ -31,12 +33,14 @@ const config = process.env
 //Check for token, create user object if found and valid named checkToken
 export const checkToken = async (req, res, next) => {
     let cookies = parseCookies(req)
-    // console.log("cookies: ", cookies)
+    // 
     if (cookies.token1 === undefined) {
         return next()
     }
     try {
         const decoded = jwt.verify(cookies.token1, config.JWT_SECRET)
+        console.log("calling getUserById from checkTokenb")
+
         const user = await getUserById(decoded.id)
         if (!user) {
             return res.status(401).send("invalid token (!user)")
@@ -73,7 +77,7 @@ export const getUserFromSocketCookie = async (cookief = '') => {
     try {
         //print cookief
         let cookies = cookie.parse(cookief);
-        console.log("cookies: ", cookies)
+        
         const decoded = jwt.verify(cookies.token1, config.JWT_SECRET)
         const user = await getUserById(decoded.id)
         if (!user) {
@@ -81,6 +85,6 @@ export const getUserFromSocketCookie = async (cookief = '') => {
         }
         return user
     } catch (e) {
-        console.log("error: ", e)
+        
     }
 }

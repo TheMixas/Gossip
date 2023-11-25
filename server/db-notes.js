@@ -30,4 +30,4 @@
 //     const [rows] = await pool.query('SELECT * FROM friendships ')
 // }
 // const result = await createNote ('Kaip isgriauti blocka', 'laikyt m1')
-// console.log(result)
+// 

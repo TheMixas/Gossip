@@ -9,7 +9,8 @@ export const pool = mysql.createPool({
     host:process.env.MYSQL_HOST,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE
+    database: process.env.MYSQL_DATABASE,
+    port:process.env.MYSQL_PORT,
 
 }).promise()
 
@@ -20,10 +21,7 @@ export const pool = mysql.createPool({
 
 
 
-export async function getQueriedUsers(query) {
-    const [rows] = await pool.query(`SELECT * FROM users u WHERE u.username LIKE '%${query}%'`);
-    return rows
-}
+
 export async function getQueriedPosts(query) {
     const [rows] = await pool.query(`SELECT * FROM posts p WHERE p.body LIKE '%${query}%'`);
     return rows

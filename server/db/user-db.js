@@ -7,25 +7,46 @@ import {
     getUserPostsPhotos,
     getUserRetweets
 } from "./post-db.js";
-const userAvatarsDir = `C:\\Users\\themi\\WebstormProjects\\Gossip\\server\\`+`/user_images/`
-const postsImagesDir = `C:\\Users\\themi\\WebstormProjects\\Gossip\\server\\`+`/user_posts_images/`
+import{userAvatarsDir,postsImagesDir} from "../app.js";
+import {queryUserInfoAndFriendInfo} from "./big-queries/queryUserInfoAndFriendInfo.js";
+import {readImagesFromPath} from "../utils/utils.js";
 
-export async function createUser(username,status,gmail, password){
-    const result = await pool.query(`INSERT INTO users (username, status, gmail, password)
-    VALUES (?,?,?,?)`, [username,status,gmail,password])
-    return getUserById(result[0].insertId)
+
+export async function createUser(username,name,gmail, password){
+    console.log("Creating user: ", username, name, gmail, password)
+    try{
+        const result = await pool.query(`INSERT INTO users (username, name, gmail, password)
+    VALUES (?,?,?,?)`, [username,name,gmail,password])
+        return getUserById(result[0].insertId)
+    }
+    catch (e){
+        console.log("sql e:", e)
+    }
+
 }
 export async function getUserById(id,selection="*"){
-    const [rows] = await pool.query(`SELECT ${selection} FROM users WHERE id = ?`, [id])
-    return rows[0];
+    console.log("Getting user by id: ", id)
+    try{
+        const [rows] = await pool.query(`SELECT ${selection} FROM users WHERE id = ?`, [id])
+        return rows[0];
+    }catch (e){
+        console.log(e)
+    }
+
 }
 export async function getUserByUsername(username,selection="*"){
     const [rows] = await pool.query(`SELECT ${selection} FROM users WHERE username = ?`, [username])
     return rows[0];
 }
 export async function getUserByEmail(email){
-    const [rows] = await pool.query(`SELECT * FROM users WHERE gmail = ?`, [email])
-    return rows[0];
+    try{
+        const [rows] = await pool.query(`SELECT * FROM users WHERE gmail = ?`, [email])
+        return rows[0];
+    }
+    catch (e){
+        console.log(e)
+    }
+
 }
 
 //NOTE: Get users mutual friends
@@ -36,10 +57,18 @@ export async function getMutuals(ourId, userId){
 
 //NOTE: Get user profile info
 export async function getUserProfile(our_id,profileUsername){
+    //TODO: OPTIMIZE INTO ONE QUERY
     try {
-        //STEP 1: Get user infO
-        let user = await getUserByUsername(profileUsername, "id,username, name, location, website, status, avatarPath, bannerPath,created")
-        if(!user) return null
+
+        // let user = await getUserByUsername(profileUsername, "id,username, name, location, website, status, avatarPath, bannerPath,created")
+
+        //STEP 1: Get user infO and get isFriend and isFriendRequestSent
+        let user = await queryUserInfoAndFriendInfo(profileUsername, our_id)
+        if(!user) {
+            console.log("User not found while querying user profile info + friend info")
+            return null
+        }
+        console.log("User profile info: ", user)
         //STEP 2: Append base64 image data
         user.avatar = fs.readFileSync(userAvatarsDir + user.avatarPath).toString("base64")
         user.banner = fs.readFileSync(userAvatarsDir + user.bannerPath).toString("base64")
@@ -52,29 +81,37 @@ export async function getUserProfile(our_id,profileUsername){
         let postImagePaths = await getUserPostsPhotos(user.id)
         let postImages = []
         for (let path of postImagePaths) {
-            console.log("path.imagePath: ", path.image_path)
-            console.log("path: ", path)
             postImages.push(fs.readFileSync(postsImagesDir + path.image_path).toString("base64"))
         }
         user.postImages = postImages
         //STEP 5: Append user posts
-        user.posts = await getUserPosts(user.id, 99, 0, true,true,our_id)
+        //Query optimized
+        user.posts = await getUserPosts(user.id, our_id,99,0)
+        // for(let post of user.posts){
+        //     console.log("Post: ", post)
+        //     console.log("Post avatar: ", post.avatar)
+        //     // if(post.original_post_id !== null){
+        //     //     console.log("Post is retweet")
+        //     //     console.log("Post.original_avatar: ", post.original_avatar)
+        //     // }
+        // }
         //STEP 6: Append user retweetts
-        user.retweets = await getUserRetweets(user.id,99,0,true,true,our_id)
+        user.retweets = await getUserRetweets(user.id,our_id,99,0)
         //STEP 7: Append user liked posts
-        user.likedPosts = await getUserLikedPosts(user.id,99,0,true,our_id)
+        user.likedPosts = await getUserLikedPosts(user.id,our_id,99,0)
         //STEP 8: Append user posts with photos
-        user.photoPosts = await getUserPostsContainingPhotos(user.id,99,0,our_id)
+        user.photoPosts = await getUserPostsContainingPhotos(user.id,our_id,99,0)
         //STEP 9: Append user friends
-        user.friends = await getFriendIds(user.id)
-        //Step 10: Append isFriend
-        user.isFriend = await checkIfFriends(user.id,our_id)
-        //Step 11: Append isFriendRequestSent
-        user.isFriendRequestSent = await checkIfFriendRequestExists(our_id,user.id)
+        user.friends = await getFriends(user.id, our_id)
+        console.log("User friends: ", user.friends)
+        //turn isFriend and isFriendRequestSent into boolean
+        user.IsFriend = user.isFriend > 0
+        user.IsFriendRequestSent = user.isFriendRequestSent > 0
 
         return user
     }catch (e) {
-        console.log(e)
+        console.log("Encountered error while getting user profile info: ", e)
+        return e
     }
 
 }
@@ -82,57 +119,105 @@ export async function getUserProfile(our_id,profileUsername){
 export async function getUserMiniProfile(our_id,profileId){
     try {
         //STEP 1: Get user infO
-        let user = await getUserById(profileId, "id,username, name, avatarPath,bannerPath,created,status")
-        if(!user) return null
-        //STEP 2: Append base64 image data
-        user.avatar = fs.readFileSync(userAvatarsDir + user.avatarPath).toString("base64")
-        user.banner = fs.readFileSync(userAvatarsDir + user.bannerPath).toString("base64")
-        user.avatarPath = undefined
-        user.bannerPath = undefined
-        //STEP 3: Append mutual friend`s ids
-        // user.mutuals = await getMutuals(our_id, user.id)
-        // //STEP 4: Append user friends
-        // user.friends = await getFriendIds(user.id)
-        //Step 5: Append isFriend
-        user.isFriend = await checkIfFriends(user.id,our_id)
-        //Step 6: Append isFriendRequestSent
-        user.isFriendRequestSent = await checkIfFriendRequestExists(our_id,user.id)
-
-        console.log("user: ", user)
+        let user = await pool.query(`
+        SELECT 
+    u.id, u.username, u.name, u.location, u.website, u.status, u.avatarPath, u.bannerPath, u.created,
+    CASE 
+        WHEN EXISTS (
+            SELECT 1
+            FROM friendships f
+            WHERE (f.user1_id = u.id AND f.user2_id = ?) OR (f.user1_id = ? AND f.user2_id = u.id)
+        ) THEN 1
+        ELSE 0
+    END AS is_friend,
+    CASE 
+        WHEN EXISTS (
+            SELECT 1
+            FROM friend_requests fr
+            WHERE (fr.sender_user_id = ? AND fr.recipient_user_id = u.id) OR (fr.sender_user_id = u.id AND fr.recipient_user_id = ?)
+        ) THEN 1
+        ELSE 0
+    END AS is_friend_request_sent
+FROM users u
+WHERE u.id =?;
+`,[our_id,our_id,our_id,our_id,profileId])[0]
+        user.avatar = readImagesFromPath(user.avatarPath, true)
+        user.banner = readImagesFromPath(user.bannerPath, true)
         return user
     }catch (e) {
-        console.log("Encountered error while getting mini profile", e)
+        
     }
 
 }
 
+/*
+* Params:<br>
+*  id: user id
+* Returns:
+* <ul>
+* <li>username</li>
+* <li>name</li>
+* <li>avatarPath</li>
+* <li>bannerPath</li>
+* <li>created</li>
+* <li>status</li>
+* <li>postCount</li>
+* <li>friendCount</li>
+* <li>likesCount</li>
+* </ul>
+*
+* */
+export async function getOwnMiniProfile(id){
+    try {
+        const [rows] = await pool.query(`SELECT 
+    u.username, u.name, u.avatarPath, u.bannerPath, u.created, u.status,
+    (SELECT COUNT(*) FROM posts WHERE creator_user_id = u.id) as postCount,
+    (SELECT COUNT(*) FROM friendships WHERE user1_id = u.id OR user2_id = u.id) as friendCount,
+    (SELECT COUNT(*) FROM post_likes WHERE liked_post_id IN (SELECT id FROM posts WHERE creator_user_id = u.id)) as likesCount
+FROM 
+    users u
+WHERE 
+    u.id = ?`, [id])
+        return rows[0]
+    }catch (e) {
+     console.log("mysql error while getting own mini profile:  ", e)
+    }
+}
 
-//NOTE: Get users with most friends
+
+/*
+* Returns users with the most liked posts
+* Returns a list of users:
+* <h1>User:</h1>
+* <ul>
+* <li>username</li>
+* <li>name</li>
+* <li>avatarPath</li>
+* <li>bannerPath</li>
+* <li>status</li>
+* <li>likesCount</li>
+* </ul>
+*
+* */
 export async function getMostPopularUsers(limit=10, ownID){
     try{
-        const [rows] = await pool.query(`SELECT id, username, name, avatarPath, (SELECT COUNT(*) FROM friendships WHERE user1_id = u.id OR user2_id = u.id) as friendCount FROM users u ORDER BY friendCount DESC LIMIT ?`, [limit])
-
-        //append image
-        //append isFriend
-        //append isFriendRequestSent
-
-        for (let i = 0; i < rows.length; i++) {
-            rows[i].avatar = fs.readFileSync(userAvatarsDir + rows[i].avatarPath).toString("base64")
-            rows[i].avatarPath = undefined
-            rows[i].isFriend = await checkIfFriends(rows[i].id, ownID)
-            rows[i].isFriendRequestSent = await checkIfFriendRequestExists(ownID,rows[i].id)
-
-
-            //Remove YOURSELF from the list
-            if(rows[i].id === ownID) {
-                rows.splice(i,1)
-                i--
-            }
-
-        }
+        const [rows] = await pool.query(`
+        SELECT
+                users.name,
+                users.username,
+                users.bannerPath,
+                users.status,
+                users.avatarPath,
+                COUNT(post_likes.liked_post_id) AS likeCount
+        FROM users
+        LEFT JOIN posts ON users.id = posts.creator_user_id
+        LEFT JOIN post_likes ON posts.id = post_likes.liked_post_id
+        GROUP BY users.id
+        ORDER BY likeCount DESC
+        LIMIT ?;`, [limit])
         return rows
     }catch (e) {
-        console.log(e)
+        
     }
 }
 
@@ -144,15 +229,59 @@ export async function getFriendIds(id) {
     const [rows] = await pool.query('SELECT user1_id as friend FROM users u JOIN friendships f ON f.user1_id = u.id WHERE f.user2_id = ? UNION SELECT user2_id as friend FROM users u JOIN friendships f ON f.user2_id = u.id WHERE f.user1_id = ?',[id, id]);
     return rows
 }
-export async function updateUser(id, updateValues){
-    for (let i = 0; i < Object.keys(updateValues).length; i++) {
-        //if not null or empty
-        if(Object.values(updateValues)[i] === null || Object.values(updateValues)[i] === "") return
+//Returns friends with all their info
+export async function getFriends(id, our_id){
+    const [rows] = await pool.query(`
+   SELECT 
+    u.id, u.username, u.name, u.location, u.website, u.status, u.avatarPath, u.bannerPath, u.created,
+     CASE 
+        WHEN EXISTS (
+            SELECT 1
+            FROM friendships f
+            WHERE (f.user1_id = u.id AND f.user2_id = ?) OR (f.user1_id = ? AND f.user2_id = u.id)
+        ) THEN 1
+        ELSE 0
+    END AS is_friend,
+    CASE 
+        WHEN EXISTS (
+            SELECT 1
+            FROM friend_requests fr
+            WHERE (fr.sender_user_id = ? AND fr.recipient_user_id = u.id) OR (fr.sender_user_id = u.id AND fr.recipient_user_id = ?)
+        ) THEN 1
+        ELSE 0
+    END AS is_friend_request_sent
+FROM 
+    users u
+JOIN 
+    friendships f ON (u.id = f.user1_id AND f.user2_id = ?) OR (u.id = f.user2_id AND f.user1_id = ?)
+WHERE 
+    u.id <>?; -- Exclude the user itself from the results
 
-        await pool.query(`UPDATE users SET ${Object.keys(updateValues)[i]} = ? WHERE id = ?`, [Object.values(updateValues)[i], id])
+    `,[our_id,our_id,our_id,our_id,id,id,id])
+    for (let i = 0; i < rows.length; i++) {
+        rows[i].avatar = readImagesFromPath(rows[i].avatarPath, true)
+        rows[i].banner = readImagesFromPath(rows[i].bannerPath, true)
+
+        rows[i].avatarPath = undefined
+        rows[i].bannerPath = undefined
+    }
+    return rows
+}
+export async function updateUser(id, updateValues){
+    try{
+        for (let i = 0; i < Object.keys(updateValues).length; i++) {
+            //if not null or empty
+            if(Object.values(updateValues)[i] === null || Object.values(updateValues)[i] === "") return
+
+            await pool.query(`UPDATE users SET ${Object.keys(updateValues)[i]} = ? WHERE id = ?`, [Object.values(updateValues)[i], id])
+        }
+
+        return "Success";
+    }
+    catch (e) {
+        console.log("SQL error on user update: ", e)
     }
 
-    return "Success";
 }
 
 export async function deleteAccount(id){
@@ -203,8 +332,7 @@ export async function sendFriendRequest(senderId,recipientId){
 }
 export async function getFriendRequests(id) {
     const [rows] = await pool.query('SELECT sender_user_id FROM friend_requests f WHERE recipient_user_id = ?',[id]);
-    // console.log("rows: ", rows)
-
+    //
     return rows
 }
 export async function acceptFriendRequest(senderId,recipientId){
@@ -219,16 +347,18 @@ export async function deleteFriendRequest(senderId, recipientId){
     return result
 }
 //NOTE: check if user is friends with another user. false / true
+//FIXED ?
 export async function checkIfFriends(user1Id, user2Id){
-    const [rows] = await pool.query(`SELECT * FROM friendships WHERE user1_id = ? AND user2_id = ? OR user1_id = ? AND user2_id = ?`, [user1Id,user2Id, user2Id, user1Id])
+    const [rows] = await pool.query(`SELECT id FROM friendships WHERE user1_id = ? AND user2_id = ? OR user1_id = ? AND user2_id = ?`, [user1Id,user2Id, user2Id, user1Id])
     return rows.length > 0
 }
 
 
 
 //NOTE: friend request exists. true / false
+//FIXED ?
 export async function checkIfFriendRequestExists(senderId, recipientId){
-    const [rows] = await pool.query(`SELECT * FROM friend_requests WHERE sender_user_id = ? AND recipient_user_id = ?`, [senderId,recipientId])
+    const [rows] = await pool.query(`SELECT id FROM friend_requests WHERE sender_user_id = ? AND recipient_user_id = ?`, [senderId,recipientId])
     return rows.length > 0
 }
 

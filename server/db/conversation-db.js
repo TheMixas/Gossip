@@ -2,8 +2,8 @@ import {pool} from "./database.js";
 import {getUserById} from "./user-db.js";
 import {storeFile} from "../store-files.js";
 import fs from "fs";
+import {userAvatarsDir} from "../app.js";
 
-const userAvatarsDir = `C:\\Users\\themi\\WebstormProjects\\Gossip\\server\\`+`/user_images/`
 export async function getConversation(conversationId){
     //NOTE: Simple query to get conversation by id
     const result = await pool.query(`SELECT * FROM conversations WHERE conversation_id = ?`,[conversationId])
@@ -15,7 +15,7 @@ export async function getConversationMembers(conversationId){
     return rows
 }
 export async function getConversationMessages(conversationId,limit=99,offset=0, selection="*"){
-    console.log("get conversation messages")
+    
     const [rows] = await pool.query(`SELECT ${selection} FROM conversations_messages WHERE conversation_id = ? ORDER BY createdAt ASC limit ?,?`,[conversationId,offset,limit])
     return rows
 }
@@ -60,7 +60,7 @@ export async function getUserConversations(userId, ourUserId,withAvatars=false){
         let members = await getConversationMembers(rows[i].conversation_id)
         //simple .find, limited to one element
         let otherUserID = members.find(member => member.user_id !== ourUserId).user_id
-        console.log("otherUser:",otherUserID)
+        
         rows[i].userID= otherUserID
     }
     return rows
@@ -73,13 +73,13 @@ export async function createPrivateConversation(user1Id,user2Id){
     //NOTE: stray away from this method
     try{
         //print paramers
-        console.log("user1Id:",user1Id)
-        console.log("user2Id:",user2Id)
+        
+        
         //NOTE: get user usernames ant set as conversation name
         let user1 = await getUserById(user1Id)
-        console.log("user1:",user1)
+        
         let user2 = await getUserById(user2Id)
-        console.log("user2:",user2)
+        
         let conversationName = user1.username + ", " + user2.username
 
         const result = await pool.query(`INSERT INTO conversations (conversation_name,isGroupChat)
@@ -90,15 +90,16 @@ export async function createPrivateConversation(user1Id,user2Id){
         await addUserToConversation(conversationId,user2Id)
         return conversationId
     }catch (e){
-        console.log(e)
+        
     }
 
 }
 
 export async function storeMessage(conversationId,senderId,body,isFile=false){
-    console.log("conversationId in store message: ",conversationId)
+    
     if(isFile)
     {
+        console.log("storing file: ", body)
         body = await storeFile(body);
     }
 

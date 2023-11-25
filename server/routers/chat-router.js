@@ -8,7 +8,8 @@ import {
 } from "../db/conversation-db.js";
 import {getFriendIds,getUserById} from "../db/user-db.js";
 import fs from "fs";
-const messageImagesDir = `C:\\Users\\themi\\WebstormProjects\\Gossip\\server\\`+`/message_imgs/`
+import {messageImagesDir} from "../app.js";
+
 
 const router = express.Router()
 
@@ -40,8 +41,8 @@ router.get('/chat/get-conversations', verifyToken, async (req, res) => {
 //             let fileData = fs.readFileSync(messageImagesDir + messages[i].message_value).toString('base64')
 //             //convert to blob
 //             messages[i].message_value = fileData
-//             //console.log("file data: ", fileData)
-//             console.log("message data: ", messages[i].message_value)
+//             //
+//             
 //         }
 //     }
 //
@@ -53,7 +54,7 @@ router.get('/chat/get-conversations', verifyToken, async (req, res) => {
 router.get('/chat/get-private-conversation/:conversationID', verifyToken, async (req, res) => {
     try{
 
-        console.log("received get private conversation request")
+        
         const user = req.user
         const convID = req.params.conversationID
         const conversation = await GetConversationWithMembers(convID)
@@ -66,17 +67,24 @@ router.get('/chat/get-private-conversation/:conversationID', verifyToken, async 
         //for each file message
         for(let i = 0; i < messages.length; i++){
             if(messages[i].isFile) {
-                let fileData = fs.readFileSync(messageImagesDir + messages[i].message_value).toString('base64')
+                let fileData = undefined;
+                    try{
+                        fileData = fs.readFileSync(messageImagesDir + messages[i].message_value).toString('base64')
+
+                    }catch (e) {
+                        console.log(e)
+                        continue
+                    }
                 //convert to blob
                 messages[i].message_value = fileData
-                //console.log("file data: ", fileData)}
+                //
             }
         }
 
         res.setHeader('Content-Type', 'application/json')
         return res.status(200).send({conversation,messages})
     }catch (e) {
-        console.log("error: ", e)
+        
         return res.status(500).send({error:e})
     }
 })
@@ -89,7 +97,7 @@ router.get('/users/suggested-friends', verifyToken, async (req, res) => {
         //TODO: implement suggested logic later
         //NOTE: for now, return friends
         const suggestedFriendsIDs = await getFriendIds(user.id)
-        console.log("suggestedFriendsIDs: ", suggestedFriendsIDs)
+        
         let suggestedFriends = []
         for(let i = 0; i < suggestedFriendsIDs.length; i++){
             let suggestedFriend = await getUserById(suggestedFriendsIDs[i].friend)
@@ -101,7 +109,7 @@ router.get('/users/suggested-friends', verifyToken, async (req, res) => {
         res.setHeader('Content-Type', 'application/json')
         return res.status(200).send({suggestedFriends})
     }catch (e) {
-        console.log("error: ", e)
+        
         return res.status(500).send({error:e})
     }
 })

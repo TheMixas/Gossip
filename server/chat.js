@@ -5,12 +5,12 @@ function join_User(id, username, room) {
     const p_user = { id, username, room };
 
     c_users.push(p_user);
-    console.log(c_users, "users");
+    
 
     return p_user;
 }
 
-console.log("user out", c_users);
+
 
 // Gets a particular user id to return the current user
 function get_Current_User(id) {

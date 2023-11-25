@@ -4,14 +4,23 @@ import http from 'http'
 const server = http.createServer(app);
 import { Server } from "socket.io";
 import session from "express-session";
-const io = new Server(server, {
-    cors: {
-        origin: 'http://localhost:3000',
-        methods: ["GET", "POST"],
-        credentials: true
+const __filename = fileURLToPath(import.meta.url);
 
-    }
-});
+
+export const __dirname = path.dirname(__filename);
+export const userAvatarsDir = __dirname + "/user_images/"
+export const postsImagesDir = __dirname + "/user_posts_images/"
+export const messageImagesDir = __dirname + "/message_imgs/"
+
+let origin = process.env.NODE_ENV === "production" ? 'https://gossip-server-c6dd76b8a875.herokuapp.com' : 'http://localhost:3000'
+
+// const io = new Server(server, {
+//     cors: {
+//         origin,
+//         credentials: true
+//     }
+// });
+const io = new Server(server)
 import bodyParser from "body-parser";
 
 import user_router from './/routers/user-router.js'
@@ -27,13 +36,30 @@ import {
 } from "./db/conversation-db.js";
 import {getFriendRequests, getMutuals, getUserByUsername, getUserStats} from "./db/user-db.js";
 import {getUserById} from "./db/user-db.js";
-import {getUserLikedPosts, getUserPosts, getUserPostsPhotos, getUserRetweets} from "./db/post-db.js";
+import {fileURLToPath} from "url";
+import path from "path";
+import fs from "fs";
 
 
+if(process.env.NODE_ENV === "production"){
+    console.log("production")
+}else {
+    console.log("development")
+}
+console.log("origin: ", origin)
 let corsOptions = {
-    origin: 'http://localhost:3000',
+    origin,
+    methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'],
     credentials: true
 }
+app.use(express.static(path.join(__dirname + '/public')));
+app.get('/koko', (req, res) => {
+    res.send({koko: "koko"})
+})
+app.get('/koko2/1', (req, res) => {
+    res.send({koko: "koko2"})
+})
+
 app.use(cors(corsOptions))
 app.use(express.json())
 app.use(postRouter)
@@ -42,6 +68,15 @@ app.use(chat_router)
 app.use(cookieParser())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended:true }));
+app.get("/*", function (req, res) {
+    res.sendFile(path.join(__dirname, "/public/index.html"), function (err) {
+        if (err) {
+            res.status(500).send(err);
+        }
+    });
+});
+
+
 
 let authedSockets= []
 
@@ -49,14 +84,14 @@ let authedSockets= []
 
 //add to authedSockets array
 function addAuthedSocket(socket, user){
-    console.log("Pushing: ", user.username, " to authedSockets array")
+    
     if(!isSocketConnected(socket.id)){
         authedSockets.push({socket: socket, user: user})
     }
 
-    console.log("authedSockets length after join: ", authedSockets.length)
+    
     for (let i = 0; i < authedSockets.length; i++) {
-        console.log(authedSockets[i].socket.id)
+        
 
     }
 }
@@ -66,12 +101,12 @@ function isSocketConnected(socketId){
 }
 function removeAuthedSocket(socketId)
 {
-    console.log("Removing: ", socketId, " from authedSockets array" ,"length: ", authedSockets.length)
+    
     authedSockets = authedSockets.filter((authedSocket)=> {
         return authedSocket.socket.id !== socketId
     })
-    console.log("length after: ", authedSockets.length)
-    console.log("authedSockets length after disconeect: ", authedSockets.length)
+    
+    
 }
 
 //get user from authedSockets array
@@ -83,17 +118,18 @@ function getUserFromAuthedSockets(socketId){
 //get socket from authedSockets array
 function getSocketFromAuthedSockets(id){
     return authedSockets.filter((authedSocket)=> {
-        console.log("pimpalas")
-        console.log("authedSocket.user.id", authedSocket.user.id)
-        console.log("id", id)
-        console.log("id vs authedSocket.user.id", id == authedSocket.user.id)
+        
+        
+        
+        
         return authedSocket.user.id == id
     })[0].socket
 }
 
 
+//Authenticate socket before connecting
 io.use(async (socket, next) => {
-    console.log("socket handshake: ", socket.handshake.headers.cookie)
+    
     const user = await getUserFromSocketCookie(socket.handshake.headers.cookie)
     if (!user) {
         return next(new Error("invalid token"))
@@ -103,7 +139,7 @@ io.use(async (socket, next) => {
     next()
 })
 io.on('connection', async (socket) => {
-    console.log('a user connected');
+    
 
     //every conversations room
     await getUserConversations(socket.user.id).then(conversations => {
@@ -116,29 +152,34 @@ io.on('connection', async (socket) => {
     })
     socket.on('private chat message', async (receiverID, body, media,conversationID) => {
         try{
-            console.log('message: ' + JSON.stringify(body));
+            console.log("starting to send private chat message")
+            
             let conversation_id = conversationID
-            console.log("conversationID: ", conversation_id)
-            console.log("conversationID2: ", conversation_id)
+            
+            
             let user = getUserFromAuthedSockets(socket.id)
-            console.log("sender user: ", user)
+            
 
+            //Check for text and send it
             if(body.length !== 0){
                 await sendMessageToUser(user.id, receiverID, body, false,conversation_id)
             }
 
+            console.log("messages media: ", media)
+            //Loop media and send it
             media.map(async media => {
                 //NOTE: send media
+                console.log("sending media: ", media)
                 await sendMessageToUser(user.id, receiverID, media, true,conversation_id)
             })
         }catch (e) {
-            console.log(e)
+            
         }
 
     })
     socket.on('group chat message', async (conversationID, body,media )=> {
         try{
-            console.log('message: ' + JSON.stringify(body));
+            
             //NOTE: send text
             await sendMessageToConversation(socket.id, conversationID, body, false)
             media.map(async media => {
@@ -146,13 +187,13 @@ io.on('connection', async (socket) => {
                 await sendMessageToConversation(socket.id, conversationID, media, true)
             })
         }catch (e) {
-            console.log(e)
+            
         }
 
 
     })
     socket.on('disconnect', () => {
-        console.log('user disconnected');
+        
         removeAuthedSocket(socket.id)
     });
 });
@@ -184,36 +225,39 @@ async function sendMessageToUser(senderID, receiverID, body, isFile,conversation
         //if user is not in conversation, create conversation, check first
         let conversation = await getConversation(conversationID)
 
-        console.log("conversation: ", conversation)
-        console.log("conversation id: ", conversation.conversation_id)
+        
+        
         await storeMessage(conversation.conversation_id, senderID, body, isFile)
 
         //NOTE: emit message to user
         //NOTE: get socket from authedSockets array
-        console.log(`emitting to user: ${receiver.username}`)
+        
         let socket = getSocketFromAuthedSockets(receiverID)
-        console.log("socket: ", socket)
+        
         if(!socket){
-            console.log("Socket not currently connected")
+            
             return
         }
 
-        console.log(`emitting to user: ${receiver.username} with socket: ${socket.id}`)
+        
         io.to(getSocketFromAuthedSockets(receiverID).emit('chat message', {value:body, isFile,sender_id:senderID}))
     }catch (e){
-        console.log("error: ", e)
+        
         return e
     }
 
 }
 
 
-// console.log("conversation members: ", await getConversationMembers(4))
-// console.log("conversation messages: ", await getConversationMessages(4, 0, 10,))
-// console.log("user posts: ", await getUserPosts(27))0
-// console.log("User retweets: ", await getUserRetweets(27))
-// console.log("User likes: ", await getUserLikedPosts(27))
+// 
+// 
+// 
+// 
+// 
 //
-console.log("user friend reqeusts: ", await getFriendRequests(3))
-
-server.listen(8080, () => console.log('Listening on port 8080'))
+console.log(__dirname)
+console.log(userAvatarsDir)
+console.log("NODE_ENV",process.env.NODE_ENV)
+console.log(await fs.readFileSync(`${userAvatarsDir}/avatar-1692568900542-685106487.jpg`))
+let port = process.env.PORT || 8080
+server.listen(port, () => console.log(`listening on *:${port}`));

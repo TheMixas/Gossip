@@ -1,9 +1,10 @@
 import {pool} from "./database.js";
 import fs from "fs";
 import {getUserById} from "./user-db.js";
-const postsImagesDir = `C:\\Users\\themi\\WebstormProjects\\Gossip\\server\\`+`/user_posts_images/`
-const userAvatarsDir = `C:\\Users\\themi\\WebstormProjects\\Gossip\\server\\`+`/user_images/`
+import {postsImagesDir, userAvatarsDir} from "../app.js";
+import {readAllPostsImages} from "../utils/utils.js";
 
+//FIXME: STOP QUERYING MORE THAN ONCE IN A FUNCTION
 
 export async function likePost(postId,userId){
     const result = await pool.query(`INSERT INTO post_likes (liked_post_id, liker_user_id)
@@ -29,7 +30,7 @@ export async function createPost(creatorId, body, imagesPaths=[],ogPostId=null,i
 
         return postId
     }catch(e){
-        console.log(e)
+        
         return null;
     }
 
@@ -37,17 +38,98 @@ export async function createPost(creatorId, body, imagesPaths=[],ogPostId=null,i
 
 
 }
+/*
+Returns post comments with avatar paths
+* Params:
+* <ul>
+* <li>postId</li>
+* <li>limit</li>
+* <li>offset</li>
+* </ul>
+* Returns:
+* <ul>
+* <li>post_id</li>
+* <li>body</li>
+* <li>post_creator_id</li>
+* <li>created_at</li>
+* <li>post_likes</li>
+* <li>post_creator_username</li>
+* <li>post_creator_name</li>
+* <li>post_creator_avatar</li>
+* <li>post_image</li>
+* <li>comment_count</li>
+* <li>retweet_count</li>
+* <li>like_count</li>
+* </ul>
+*
+*
+*
+* */
 export async function getPostComments(postId,limit,offset){
     //if isComment true
     // and order them by number of likes and return p.body, p.created_at, user id, likes, username, name, profile picture
-    const [comments] = await pool.query(`SELECT p.id, p.body, p.creator_user_id, p.created_at, COUNT(pl.liked_post_id) AS likes, u.username, u.name, u.avatarPath
-    FROM posts p
-    LEFT JOIN post_likes pl ON p.id = pl.liked_post_id
-    LEFT JOIN users u ON p.creator_user_id = u.id
-    WHERE p.isComment = true AND p.original_post_id = ?
-    GROUP BY p.id
-    ORDER BY likes DESC, p.created_at DESC
-    LIMIT ?,?`,[postId,offset,limit])
+    const [comments] = await pool.query(
+        `SELECT 
+    p.id AS post_id, 
+    p.body AS body, 
+    p.creator_user_id AS post_creator_id, 
+    p.created_at AS created_at, 
+    COUNT(pl.liked_post_id) AS post_likes, 
+    u.username AS creator_username, 
+    u.name AS creator_name, 
+    u.avatarPath AS post_creator_avatar,
+    pi.image_path AS post_images,
+    comment_count.count AS comment_count,
+    retweet_count.count AS retweet_count,
+    like_count.count AS like_count
+FROM 
+    posts p
+LEFT JOIN 
+    post_likes pl ON p.id = pl.liked_post_id
+LEFT JOIN 
+    users u ON p.creator_user_id = u.id
+LEFT JOIN 
+    posts_images pi ON p.id = pi.post_id
+LEFT JOIN (
+    SELECT 
+        original_post_id, 
+        COUNT(*) AS count 
+    FROM 
+        posts 
+    WHERE 
+        isComment = true 
+    GROUP BY 
+        original_post_id
+) comment_count ON p.id = comment_count.original_post_id
+LEFT JOIN (
+    SELECT 
+        original_post_id, 
+        COUNT(*) AS count 
+    FROM 
+        posts 
+    WHERE 
+        isRetweet = true 
+    GROUP BY 
+        original_post_id
+) retweet_count ON p.id = retweet_count.original_post_id
+LEFT JOIN (
+    SELECT 
+        liked_post_id, 
+        COUNT(*) AS count 
+    FROM 
+        post_likes post_likes
+    GROUP BY 
+        liked_post_id
+) like_count ON p.id = like_count.liked_post_id
+WHERE 
+    p.isComment = true 
+    AND p.original_post_id = ? 
+GROUP BY 
+    p.id, pi.image_path, comment_count.count, retweet_count.count, like_count.count
+ORDER BY 
+    post_likes DESC, created_at DESC
+LIMIT ?,?;
+`,[postId,offset,limit])
     return comments
 }
 export async function getPostRecentLikers(postId,limit=99,offset=0){
@@ -113,71 +195,160 @@ export async function getPost(postId,ownId=null){
 
 }
 
-export async function getHottestPosts(limit,offset,userId=null){
-    //SELECT  posts and order them by number of likes AND DATE
 
-    const [hottestPosts] = await pool.query(`SELECT p.id, p.body, p.creator_user_id, p.created_at,original_post_id,p.isRetweet,p.isComment, COUNT(pl.liked_post_id) AS likes
-    FROM posts p
-    LEFT JOIN post_likes pl ON p.id = pl.liked_post_id
-    WHERE p.isComment = false
-    GROUP BY p.id
-    ORDER BY likes DESC, p.created_at DESC
-    LIMIT ?,?`,[offset,limit])
-    //FOR each post add isLiked
-    if(!userId) return hottestPosts
-    for (let i = 0; i < hottestPosts.length; i++) {
-        const [isLiked] = await pool.query(`SELECT * FROM post_likes WHERE liked_post_id = ? AND liker_user_id = ?`,[hottestPosts[i].id,userId])
-        hottestPosts[i].isLiked = isLiked.length > 0
+/*
+*   Params:
+*       <ul>
+*           <li>userId</li>
+*          <li>ownId</li>
+*          <li>limit</li>
+*         <li>offset</li>
+*      </ul>
+* Rretuns the base64 encoded avatar of the user
+* and post photos
+*  Returns list of posts of a user:<br>
+* Posat object:
+*     <ul>
+* <li>id</li>
+* <li>body</li>
+* <li>creator_user_id</li>
+* <li>created_at</li>
+* <li>isComment</li>
+* <li>isRetweet</li>
+* <li>original_post_id</li>
+* <li>user_liked</li>
+* <li>creator_avatarPath</li>
+* <li>creator_name</li>
+* <li>creator_username</li>
+* <li>creator_bannerPath</li>
+* <li>comment_count</li>
+* <li>retweet_count</li>
+* <li>like_count</li>
+* <li>post_image_paths</li>
+* and more
+*
+*
+* </ul>
+*
+*/
+export async function getUserPosts(userID,ownID,limit=99,offset=0,) {
+    try {
+        const [rows] = await pool.query(`SELECT 
+    p.id, 
+    p.body, 
+    p.creator_user_id, 
+    p.created_at,
+    p.original_post_id,
+    p.isRetweet,
+    p.isComment,
+    COALESCE(pc.comment_count, 0) AS comment_count,
+    COALESCE(pr.retweet_count, 0) AS retweet_count,
+    COALESCE(pl.like_count, 0) AS like_count,
+    CASE WHEN plu.liker_user_id IS NOT NULL THEN 1 ELSE 0 END AS user_liked,
+    GROUP_CONCAT(pi.image_path) AS post_image_paths,
+    op.body AS original_body,
+    op.creator_user_id AS original_creator_user_id,
+    op.created_at AS original_created_at,
+    COALESCE(opc.comment_count, 0) AS original_comment_count,
+    COALESCE(opr.retweet_count, 0) AS original_retweet_count,
+    COALESCE(opl.like_count, 0) AS original_like_count,
+    CASE WHEN oplu.liker_user_id IS NOT NULL THEN 1 ELSE 0 END AS original_user_liked,
+    GROUP_CONCAT(opi.image_path) AS original_image_paths,
+    u.username AS creator_username,
+    u.name AS creator_name,
+    u.bannerPath AS creator_bannerPath,
+    u.avatarPath AS creator_avatarPath,
+    ou.avatarPath AS original_creator_avatarPath,
+    ou.username AS original_creator_username,  -- Added field for original creator username
+    ou.name AS original_creator_name  -- Added field for original creator name
+FROM posts p
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS comment_count
+    FROM posts
+    WHERE isComment = true
+    GROUP BY original_post_id
+) pc ON p.id = pc.original_post_id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS retweet_count
+    FROM posts
+    WHERE isRetweet = true
+    GROUP BY original_post_id
+) pr ON p.id = pr.original_post_id
+LEFT JOIN (
+    SELECT liked_post_id, COUNT(*) AS like_count
+    FROM post_likes
+    GROUP BY liked_post_id
+) pl ON p.id = pl.liked_post_id
+LEFT JOIN (
+    SELECT liked_post_id, liker_user_id
+    FROM post_likes
+    WHERE liker_user_id IS NULL
+) plu ON p.id = plu.liked_post_id
+LEFT JOIN posts_images pi ON p.id = pi.post_id
+LEFT JOIN posts op ON p.original_post_id = op.id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS comment_count
+    FROM posts
+    WHERE isComment = true
+    GROUP BY original_post_id
+) opc ON op.id = opc.original_post_id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS retweet_count
+    FROM posts
+    WHERE isRetweet = true
+    GROUP BY original_post_id
+) opr ON op.id = opr.original_post_id
+LEFT JOIN (
+    SELECT liked_post_id, COUNT(*) AS like_count
+    FROM post_likes
+    GROUP BY liked_post_id
+) opl ON op.id = opl.liked_post_id
+LEFT JOIN (
+    SELECT liked_post_id, liker_user_id
+    FROM post_likes
+    WHERE liker_user_id = ?
+) oplu ON op.id = oplu.liked_post_id
+LEFT JOIN posts_images opi ON op.id = opi.post_id
+JOIN users u ON p.creator_user_id = u.id
+LEFT JOIN users ou ON op.creator_user_id = ou.id  -- Added join for original creator
+WHERE (p.isComment = false OR p.isRetweet = true) AND p.creator_user_id = ?
+GROUP BY p.id
+ORDER BY (pc.comment_count + pr.retweet_count + pl.like_count) DESC, p.created_at DESC
+LIMIT ?, ?
+
+    `, [ownID, userID, offset, limit])
+
+        // for (let i = 0; i < rows.length; i++) {
+        //     //Append avatar photos
+        //     rows[i].avatar = readImagesFromPath(rows[i].creator_avatarPath, true)
+        //     rows[i].creator_avatarPath = undefined
+        //
+        //     //Append post photos
+        //     rows[i].photos = readImagesFromPath(rows[i].post_image_paths, false)
+        //     rows[i].post_image_paths = undefined
+        //
+        //     if (rows[i].original_post_id) {
+        //         console.log("Original post avatarpath ", rows[i].original_creator_avatarPath)
+        //         //Append original post avatar photos
+        //         rows[i].original_avatar = readImagesFromPath(rows[i].original_creator_avatarPath, true)
+        //         console.log("Original avatar: ", rows[i].original_avatar)
+        //         rows[i].original_avatarPath = undefined
+        //
+        //         //Append original post photos
+        //         rows[i].original_photos = readImagesFromPath(rows[i].original_image_paths, false)
+        //         rows[i].original_image_paths = undefined
+        //     }
+        //
+        // }
+
+        // console.log("Queried specific users posts: ", rows)
+        return readAllPostsImages(rows)
+    } catch (e) {
+        console.log("Encountered error while quering specific users posts: ", e)
+        return null
     }
-    return hottestPosts
 
 }
-//NOTE: Get user posts (!comment, !retweet) with pictures
-export async function getUserPosts(userId,limit=99,offset=0,withCreatorAvatars=true, withStats=false,ownId=undefined){
-    //NOTE: with creator avatars appends creator avatar and banner
-    const [rows] = await pool.query(`SELECT * FROM posts 
-         WHERE creator_user_id = ? 
-         AND isComment = false
-         AND isRetweet = false
-         ORDER BY created_at DESC LIMIT ?,?`,[userId,offset,limit])
-
-    let user = await getUserById(userId,"avatarPath,bannerPath,name,username")
-
-
-
-    for (let i = 0; i < rows.length; i++) {
-        rows[i].avatar = fs.readFileSync(userAvatarsDir+user.avatarPath).toString('base64')
-        // rows[i].banner = fs.readFileSync(userAvatarsDir+user.bannerPath).toString('base64')
-
-        //Append names and isLiked
-        rows[i].name = user.name
-        rows[i].username = user.username
-        const [isLiked] = await pool.query(`SELECT * FROM post_likes WHERE liked_post_id = ? AND liker_user_id = ?`,[rows[i].id,ownId])
-        rows[i].isLiked = isLiked.length > 0 || false
-
-
-
-
-    }
-
-    if(withStats){
-        for (let i = 0; i < rows.length; i++) {
-            rows[i].stats = await getPostStats(rows[i].id)
-        }
-    }
-
-    for (let i = 0; i < rows.length; i++) {
-        let photoPaths = await getPostPhotosPaths(rows[i].id)
-        let photos = []
-        for(let photoPath of photoPaths){
-            photos.push(fs.readFileSync(postsImagesDir+photoPath.image_path).toString('base64'))
-        }
-        //NOTE: Change name of photos if needed for client
-        rows[i].photos = photos
-    }
-    return rows
-}
-
 
 //NOTE: Get queried posts (!comment, !retweet) with pictures
 export async function getPostsByQuery(query,limit=99,offset=0,ownId=undefined){
@@ -217,74 +388,187 @@ return rows
 
 
 //NOTE: Get posts that contain photos with photos appended on .photos
-export async function getUserPostsContainingPhotos(userId,limit=99,offset=0,ownId=undefined){
-    const [rows] = await pool.query(`SELECT * FROM posts 
-         WHERE creator_user_id = ? 
-         AND isComment = false
-         AND id IN (SELECT post_id FROM posts_images)
-         ORDER BY created_at DESC LIMIT ?,?`,[userId,offset,limit])
+export async function getUserPostsContainingPhotos(userId,ownId,limit=99,offset=0){
+    const [rows] = await pool.query(`
+  
+SELECT 
+    p.id, 
+    p.body, 
+    p.creator_user_id, 
+    p.created_at,
+    p.original_post_id,
+    p.isRetweet,
+    p.isComment,
+    COALESCE(pc.comment_count, 0) AS comment_count,
+    COALESCE(pr.retweet_count, 0) AS retweet_count,
+    COALESCE(pl.like_count, 0) AS like_count,
+    CASE WHEN plu.liker_user_id IS NOT NULL THEN 1 ELSE 0 END AS user_liked,
+    GROUP_CONCAT(pi.image_path) AS post_image_paths,
+    op.body AS original_body,
+    op.creator_user_id AS original_creator_user_id,
+    op.created_at AS original_created_at,
+    COALESCE(opc.comment_count, 0) AS original_comment_count,
+    COALESCE(opr.retweet_count, 0) AS original_retweet_count,
+    COALESCE(opl.like_count, 0) AS original_like_count,
+    CASE WHEN oplu.liker_user_id IS NOT NULL THEN 1 ELSE 0 END AS original_user_liked,
+    GROUP_CONCAT(opi.image_path) AS original_image_paths,
+    u.username AS creator_username,
+    u.name AS creator_name,
+    u.bannerPath AS creator_bannerPath,
+    u.avatarPath AS creator_avatarPath,
+    ou.avatarPath AS original_creator_avatarPath,
+    ou.username AS original_creator_username,  
+    ou.name AS original_creator_name  
+FROM posts p
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS comment_count
+    FROM posts
+    WHERE isComment = true
+    GROUP BY original_post_id
+) pc ON p.id = pc.original_post_id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS retweet_count
+    FROM posts
+    WHERE isRetweet = true
+    GROUP BY original_post_id
+) pr ON p.id = pr.original_post_id
+LEFT JOIN (
+    SELECT liked_post_id, COUNT(*) AS like_count
+    FROM post_likes
+    GROUP BY liked_post_id
+) pl ON p.id = pl.liked_post_id
+LEFT JOIN (
+    SELECT liked_post_id, liker_user_id
+    FROM post_likes
+    WHERE liker_user_id IS NULL
+) plu ON p.id = plu.liked_post_id
+LEFT JOIN posts_images pi ON p.id = pi.post_id
+LEFT JOIN posts op ON p.original_post_id = op.id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS comment_count
+    FROM posts
+    WHERE isComment = true
+    GROUP BY original_post_id
+) opc ON op.id = opc.original_post_id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS retweet_count
+    FROM posts
+    WHERE isRetweet = true
+    GROUP BY original_post_id
+) opr ON op.id = opr.original_post_id
+LEFT JOIN (
+    SELECT liked_post_id, COUNT(*) AS like_count
+    FROM post_likes
+    GROUP BY liked_post_id
+) opl ON op.id = opl.liked_post_id
+LEFT JOIN (
+    SELECT liked_post_id, liker_user_id
+    FROM post_likes
+    WHERE liker_user_id = ?
+) oplu ON op.id = oplu.liked_post_id
+LEFT JOIN posts_images opi ON op.id = opi.post_id
+JOIN users u ON p.creator_user_id = u.id
+LEFT JOIN users ou ON op.creator_user_id = ou.id  
+WHERE (p.isComment = false OR p.isRetweet = true) AND p.creator_user_id = ? AND pi.image_path IS NOT NULL
+GROUP BY p.id
+ORDER BY (pc.comment_count + pr.retweet_count + pl.like_count) DESC, p.created_at DESC
+LIMIT ?, ?
 
-    let user = await getUserById(userId,"avatarPath,name,username")
 
 
-    for (let i = 0; i < rows.length; i++) {
+    `,[ownId,userId,offset,limit])
 
-        rows[i].avatar = fs.readFileSync(userAvatarsDir+user.avatarPath).toString('base64')
-        rows[i].name = user.name
-        rows[i].username = user.username
-
-        let photoPaths = await getPostPhotosPaths(rows[i].id)
-        let photos = []
-        for(let photoPath of photoPaths){
-            photos.push(fs.readFileSync(postsImagesDir+photoPath.image_path).toString('base64'))
-        }
-        //NOTE: Change name of photos if needed for client
-        rows[i].photos = photos
-
-        const [isLiked] = await pool.query(`SELECT * FROM post_likes WHERE liked_post_id = ? AND liker_user_id = ?`,[rows[i].id,ownId])
-        rows[i].isLiked = isLiked.length > 0 || false
-
-    }
-    return rows
+    return readAllPostsImages(rows)
 }
 
 //NOTE: Get retweets that could contain photos with photos appended on .photos
-export async function getUserRetweets(userId,limit=99,offset=0, withCreatorAvatars=true, withStats=false, ownId=undefined){
-    const [rows] = await pool.query(`SELECT * FROM posts 
-         WHERE creator_user_id = ? 
-         AND isComment = false
-         AND isRetweet = true
-         ORDER BY created_at DESC LIMIT ?,?`,[userId,offset,limit])
+export async function getUserRetweets(userId,ownId,limit=99,offset=0){
+    const [rows] = await pool.query(`
+    SELECT 
+    p.id, 
+    p.body, 
+    p.creator_user_id, 
+    p.created_at,
+    p.original_post_id,
+    p.isRetweet,
+    p.isComment,
+    COALESCE(pc.comment_count, 0) AS comment_count,
+    COALESCE(pr.retweet_count, 0) AS retweet_count,
+    COALESCE(pl.like_count, 0) AS like_count,
+    CASE WHEN plu.liker_user_id IS NOT NULL THEN 1 ELSE 0 END AS user_liked,
+    GROUP_CONCAT(pi.image_path) AS post_image_paths,
+    op.body AS original_body,
+    op.creator_user_id AS original_creator_user_id,
+    op.created_at AS original_created_at,
+    COALESCE(opc.comment_count, 0) AS original_comment_count,
+    COALESCE(opr.retweet_count, 0) AS original_retweet_count,
+    COALESCE(opl.like_count, 0) AS original_like_count,
+    CASE WHEN oplu.liker_user_id IS NOT NULL THEN 1 ELSE 0 END AS original_user_liked,
+    GROUP_CONCAT(opi.image_path) AS original_image_paths,
+    u.username AS creator_username,
+    u.name AS creator_name,
+    u.bannerPath AS creator_bannerPath,
+    u.avatarPath AS creator_avatarPath,
+    ou.avatarPath AS original_creator_avatarPath,
+    ou.username AS original_creator_username,
+    ou.name AS original_creator_name
+FROM posts p
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS comment_count
+    FROM posts
+    WHERE isComment = true
+    GROUP BY original_post_id
+) pc ON p.id = pc.original_post_id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS retweet_count
+    FROM posts
+    WHERE isRetweet = true
+    GROUP BY original_post_id
+) pr ON p.id = pr.original_post_id
+LEFT JOIN (
+    SELECT liked_post_id, COUNT(*) AS like_count
+    FROM post_likes
+    GROUP BY liked_post_id
+) pl ON p.id = pl.liked_post_id
+LEFT JOIN (
+    SELECT liked_post_id, liker_user_id
+    FROM post_likes
+    WHERE liker_user_id IS NULL
+) plu ON p.id = plu.liked_post_id
+LEFT JOIN posts_images pi ON p.id = pi.post_id
+LEFT JOIN posts op ON p.original_post_id = op.id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS comment_count
+    FROM posts
+    WHERE isComment = true
+    GROUP BY original_post_id
+) opc ON op.id = opc.original_post_id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS retweet_count
+    FROM posts
+    WHERE isRetweet = true
+    GROUP BY original_post_id
+) opr ON op.id = opr.original_post_id
+LEFT JOIN (
+    SELECT liked_post_id, COUNT(*) AS like_count
+    FROM post_likes
+    GROUP BY liked_post_id
+) opl ON op.id = opl.liked_post_id
+LEFT JOIN (
+    SELECT liked_post_id, liker_user_id
+    FROM post_likes
+    WHERE liker_user_id = ?
+) oplu ON op.id = oplu.liked_post_id
+LEFT JOIN posts_images opi ON op.id = opi.post_id
+JOIN users u ON p.creator_user_id = u.id
+LEFT JOIN users ou ON op.creator_user_id = ou.id
+WHERE p.isRetweet = true AND p.creator_user_id = ?
+GROUP BY p.id
+ORDER BY (pc.comment_count + pr.retweet_count + pl.like_count) DESC, p.created_at DESC
+LIMIT ?, ?;
+`,[ownId,userId,offset,limit])
 
-
-    let user = await getUserById(userId,"avatarPath, bannerPath,name,username")
-
-    for (let i = 0; i < rows.length; i++) {
-        rows[i].avatar = fs.readFileSync(userAvatarsDir+user.avatarPath).toString('base64')
-        rows[i].name = user.name
-        rows[i].username = user.username
-
-        const [isLiked] = await pool.query(`SELECT * FROM post_likes WHERE liked_post_id = ? AND liker_user_id = ?`,[rows[i].id,ownId])
-        rows[i].isLiked = isLiked.length > 0 || false
-
-        // rows[i].banner = fs.readFileSync(userAvatarsDir+user.bannerPath).toString('base64')
-    }
-    if(withStats){
-        for (let i = 0; i < rows.length; i++) {
-            rows[i].stats = await getPostStats(rows[i].id)
-        }
-    }
-
-    for (let i = 0; i < rows.length; i++) {
-        let photoPaths = await getPostPhotosPaths(rows[i].id)
-        let photos = []
-        for(let photoPath of photoPaths){
-            photos.push(fs.readFileSync(postsImagesDir+photoPath.image_path).toString('base64'))
-        }
-        //NOTE: Change name of photos if needed for client
-        rows[i].photos = photos
-    }
-    return rows
+   return readAllPostsImages(rows)
 }
 
 
@@ -295,37 +579,97 @@ export async function getUserPostsPhotos(userId,limit=99,offset=0){
 }
 
 //NOTE: Get posts that a user has liked with photos appended on .photos
-export async function getUserLikedPosts(userId,limit=99,offset=0,withStats=true,ownId=undefined){
-    const [rows] = await pool.query(`SELECT * FROM posts 
-         WHERE id IN (SELECT liked_post_id FROM post_likes WHERE liker_user_id = ?)
-         AND isComment = false
-         ORDER BY created_at DESC LIMIT ?,?`,[userId,offset,limit])
+export async function getUserLikedPosts(userId,ownId,limit=99,offset=0){
+    const [rows] = await pool.query(`
+SELECT 
+    p.id, 
+    p.body, 
+    p.creator_user_id, 
+    p.created_at,
+    p.original_post_id,
+    p.isRetweet,
+    p.isComment,
+    COALESCE(pc.comment_count, 0) AS comment_count,
+    COALESCE(pr.retweet_count, 0) AS retweet_count,
+    COALESCE(pl.like_count, 0) AS like_count,
+    CASE WHEN plu.liker_user_id IS NOT NULL THEN 1 ELSE 0 END AS user_liked,
+    GROUP_CONCAT(pi.image_path) AS post_image_paths,
+    op.body AS original_body,
+    op.creator_user_id AS original_creator_user_id,
+    op.created_at AS original_created_at,
+    COALESCE(opc.comment_count, 0) AS original_comment_count,
+    COALESCE(opr.retweet_count, 0) AS original_retweet_count,
+    COALESCE(opl.like_count, 0) AS original_like_count,
+    CASE WHEN oplu.liker_user_id IS NOT NULL THEN 1 ELSE 0 END AS original_user_liked,
+    GROUP_CONCAT(opi.image_path) AS original_image_paths,
+    u.username AS creator_username,
+    u.name AS creator_name,
+    u.bannerPath AS creator_bannerPath,
+    u.avatarPath AS creator_avatarPath,
+    ou.avatarPath AS original_creator_avatarPath,
+    ou.username AS original_creator_username,
+    ou.name AS original_creator_name
+FROM posts p
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS comment_count
+    FROM posts
+    WHERE isComment = true
+    GROUP BY original_post_id
+) pc ON p.id = pc.original_post_id
+-- Add back the join for retweet count
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS retweet_count
+    FROM posts
+    WHERE isRetweet = true
+    GROUP BY original_post_id
+) pr ON p.id = pr.original_post_id
+-- Add back the join for liked post count
+LEFT JOIN (
+    SELECT liked_post_id, COUNT(*) AS like_count
+    FROM post_likes
+    GROUP BY liked_post_id
+) pl ON p.id = pl.liked_post_id
+-- Add back the join for posts liked by a specific user
+LEFT JOIN (
+    SELECT liked_post_id, liker_user_id
+    FROM post_likes
+    WHERE liker_user_id = 27
+) plu ON p.id = plu.liked_post_id
+LEFT JOIN posts_images pi ON p.id = pi.post_id
+LEFT JOIN posts op ON p.original_post_id = op.id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS comment_count
+    FROM posts
+    WHERE isComment = true
+    GROUP BY original_post_id
+) opc ON op.id = opc.original_post_id
+LEFT JOIN (
+    SELECT original_post_id, COUNT(*) AS retweet_count
+    FROM posts
+    WHERE isRetweet = true
+    GROUP BY original_post_id
+) opr ON op.id = opr.original_post_id
+LEFT JOIN (
+    SELECT liked_post_id, COUNT(*) AS like_count
+    FROM post_likes
+    GROUP BY liked_post_id
+) opl ON op.id = opl.liked_post_id
+LEFT JOIN (
+    SELECT liked_post_id, liker_user_id
+    FROM post_likes
+    WHERE liker_user_id = ?
+) oplu ON op.id = oplu.liked_post_id
+LEFT JOIN posts_images opi ON op.id = opi.post_id
+JOIN users u ON p.creator_user_id = u.id
+LEFT JOIN users ou ON op.creator_user_id = ou.id
+WHERE plu.liker_user_id = ?
+GROUP BY p.id
+ORDER BY (pc.comment_count + pr.retweet_count + pl.like_count) DESC, p.created_at DESC
+LIMIT ?,?;
+
+    `,[ownId,userId,offset,limit])
 
 
-    //apend avatar and banner
-    for (let i = 0; i < rows.length; i++) {
-        let user = await getUserById(rows[i].creator_user_id,"avatarPath,username, name")
-        rows[i].avatar = fs.readFileSync(userAvatarsDir+user.avatarPath).toString('base64')
-        rows[i].name = user.name
-        rows[i].username = user.username
-
-        const [isLiked] = await pool.query(`SELECT * FROM post_likes WHERE liked_post_id = ? AND liker_user_id = ?`,[rows[i].id,ownId])
-        rows[i].isLiked = isLiked.length > 0 || false
-    }
-    if(withStats){
-        for (let i = 0; i < rows.length; i++) {
-            rows[i].stats = await getPostStats(rows[i].id)
-        }
-    }
-
-    for (let i = 0; i < rows.length; i++) {
-        let photoPaths = await getPostPhotosPaths(rows[i].id)
-        let photos = []
-        for(let photoPath of photoPaths){
-            photos.push(fs.readFileSync(postsImagesDir+photoPath.image_path).toString('base64'))
-        }
-        //NOTE: Change name of photos if needed for client
-        rows[i].photos = photos
-    }
-    return rows
+    //apend images
+    return readAllPostsImages(rows)
 }
