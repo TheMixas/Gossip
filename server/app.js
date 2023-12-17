@@ -12,20 +12,16 @@ export const userAvatarsDir = __dirname + "/user_images/"
 export const postsImagesDir = __dirname + "/user_posts_images/"
 export const messageImagesDir = __dirname + "/message_imgs/"
 
-let origin = process.env.NODE_ENV === "production" ? 'https://gossip-server-c6dd76b8a875.herokuapp.com' : 'http://localhost:3000'
+export let origin = process.env.NODE_ENV === "production" ? 'https://gossip-server-c6dd76b8a875.herokuapp.com' : ['http://localhost:3000']
 
-// const io = new Server(server, {
-//     cors: {
-//         origin,
-//         credentials: true
-//     }
-// });
-const io = new Server(server)
+
+// const io = new Server(server)
 import bodyParser from "body-parser";
 
 import user_router from './/routers/user-router.js'
 import postRouter    from "./routers/post-router.js";
 import chat_router   from "./routers/chat-router.js";
+import forgot_password_router from "./routers/forgot-password-router.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import {getUserFromSocketCookie} from "./middleware/auth.js";
@@ -52,6 +48,10 @@ let corsOptions = {
     methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'],
     credentials: true
 }
+const io = new Server(server,
+    {
+        cors:corsOptions
+    });
 app.use(express.static(path.join(__dirname + '/public')));
 app.get('/koko', (req, res) => {
     res.send({koko: "koko"})
@@ -65,6 +65,8 @@ app.use(express.json())
 app.use(postRouter)
 app.use(user_router)
 app.use(chat_router)
+app.use(forgot_password_router)
+
 app.use(cookieParser())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended:true }));
@@ -139,7 +141,7 @@ io.use(async (socket, next) => {
     next()
 })
 io.on('connection', async (socket) => {
-    
+    console.log("connected")
 
     //every conversations room
     await getUserConversations(socket.user.id).then(conversations => {
@@ -255,9 +257,9 @@ async function sendMessageToUser(senderID, receiverID, body, isFile,conversation
 // 
 // 
 //
-console.log(__dirname)
-console.log(userAvatarsDir)
-console.log("NODE_ENV",process.env.NODE_ENV)
-console.log(await fs.readFileSync(`${userAvatarsDir}/avatar-1692568900542-685106487.jpg`))
+// console.log(__dirname)
+// console.log(userAvatarsDir)
+// console.log("NODE_ENV",process.env.NODE_ENV)
+// console.log(await fs.readFileSync(`${userAvatarsDir}/avatar-1692568900542-685106487.jpg`))
 let port = process.env.PORT || 8080
 server.listen(port, () => console.log(`listening on *:${port}`));

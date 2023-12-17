@@ -142,61 +142,62 @@ router.post('/users/register', async (req,res) =>{
 //LOGIN
 router.post('/users/login', async (req,res) =>{
     
-    
-    const {password, credentials} = req.body
-    console.log("req.body: ", req.body)
+    try {
+        const {password, credentials} = req.body
 
 
+        if (!credentials || !password) {
 
-    if(!credentials || !password){
-        
-        return res.status(400).send({error:"missing fields"})
-    }
-    let user;
-    if(validator.isEmail(credentials)){
-        //check if user exists from email
-        user = await getUserByEmail(credentials)
-        if(!user){
-            return res.status(404).send({error:"email does not exist"})
+            return res.status(400).send({error: "missing fields"})
         }
-    }else{
-        //check if user exists from username
-        user = await getUserByUsername(credentials)
-        if(!user){
-            return res.status(404).send({error:"username does not exist"})
+        let user;
+        if (validator.isEmail(credentials)) {
+            //check if user exists from email
+            user = await getUserByEmail(credentials, "id, password, avatarPath, bannerPath, username")
+            if (!user) {
+                return res.status(404).send({error: "email does not exist"})
+            }
+        } else {
+            //check if user exists from username
+            user = await getUserByUsername(credentials)
+            if (!user) {
+                return res.status(404).send({error: "username does not exist"})
+            }
+
         }
 
+
+        //check if password is correct
+        const isMatch = await bcrypt.compare(password, user.password)
+
+
+        if (!isMatch) {
+
+            return res.status(400).send({error: "password is incorrect"})
+        }
+
+        const token = jwt.sign(
+            {id: user.id},
+            process.env.JWT_SECRET,
+            {expiresIn: "7d"}
+        )
+
+        // res.cookie("secureCookie", JSON.stringify(token),{
+        //     secure: process.env.mode === "production",
+        //     httpOnly: true,
+        //     expires: dayjs().add(7, "days").toDate(),
+        // })
+        let now = new Date();
+        let time = now.getTime();
+        let expireTime = time + 1000 * 360000;
+        now.setTime(expireTime);
+        res.set("Set-Cookie", `token1=${token}; HttpOnly; Path=/; expires=${now.toUTCString()};`)
+        return res.status(200).send(user)
     }
-
-
-    //check if password is correct
-
-    const isMatch = await bcrypt.compare(password, user.password)
-    
-    
-
-    if(!isMatch){
-        
-        return res.status(400).send({error:"password is incorrect"})
+    catch (e) {
+        console.log(e)
+        return res.status(500).send({error: e})
     }
-
-    const token = jwt.sign(
-    { id: user.id},
-        process.env.JWT_SECRET,
-        {expiresIn: "7d"}
-    )
-
-    // res.cookie("secureCookie", JSON.stringify(token),{
-    //     secure: process.env.mode === "production",
-    //     httpOnly: true,
-    //     expires: dayjs().add(7, "days").toDate(),
-    // })
-    let now = new Date();
-    let time = now.getTime();
-    let expireTime = time + 1000 * 360000;
-    now.setTime(expireTime);
-    res.set("Set-Cookie", `token1=${token}; HttpOnly; Path=/; expires=${now.toUTCString()};`)
-    return res.status(200).send(user)
 })
 
 //LOGOUT
@@ -293,20 +294,18 @@ router.get('/users/banner', verifyToken, async (req,res) =>{
 
 //update user
 router.post('/users/update', verifyToken,upload.fields([{name:'banner', maxCount:1}, {name:'avatar', maxCount: 1}]), async (req,res) =>{
-    
     //print req
-    
-    
-
     try{
-        const isMatch = await bcrypt.compare(req.body.oldPassword, req.user.password)
+        //OLD SYSTEM NEEDED TO CHECK IF OLD PASSWORD IS CORRECT
+        //NEW SYSTEM, DOESNT NOT ALLOW TO CHANGE PASSWORD HERE
+        // const isMatch = await bcrypt.compare(req.body.oldPassword, req.user.password)
 
-        if(!isMatch){
-            
-            return res.status(400).send({error:"password is incorrect"})
-        }
+        // if(!isMatch){
+        //
+        //     return res.status(400).send({error:"password is incorrect"})
+        // }
 
-        const allowedUpdates = ["name", "status","location","email","website", "password"]
+        const allowedUpdates = ["name", "status","location","email","website"]
         let updates = {}
 
 
@@ -327,11 +326,11 @@ router.post('/users/update', verifyToken,upload.fields([{name:'banner', maxCount
         for (let i = 0; i < Object.keys(req.body).length; i++) {
             const key = Object.keys(req.body)[i];
             if(req.body[key] !== "" && allowedUpdates.includes(key)){
-                //ecrypt password
-                if(key === "password"){
-                    updates[key] = await bcrypt.hash(req.body[key], 8)
-                    continue
-                }
+                //USED to ecrypt password
+                // if(key === "password"){
+                //     updates[key] = await bcrypt.hash(req.body[key], 8)
+                //     continue
+                // }
                 updates[key] = req.body[key]
             }
         }
@@ -455,16 +454,8 @@ router.get('/friendrequests',verifyToken, async (req,res) =>{
         return res.status(404).send({error:"user not found"})
     }
 
+    //FIXME: optimize by combining eveyrthing into one query
     let friendRequests = await getFriendRequests(user.id)
-    for (let friendRequest of friendRequests) {
-        
-        
-        let requester = await getUserById(friendRequest.sender_user_id, "avatarPath, name, username")
-        
-        friendRequest.avatar = fs.readFileSync(userAvatarsDir + requester.avatarPath).toString('base64')
-        friendRequest.name = requester.name
-        friendRequest.username = requester.username
-    }
 
     return res.status(200).send(friendRequests)
 })
@@ -567,13 +558,14 @@ router.post('/friendrequests/cancel', verifyToken, async (req,res) =>{
 //ACCEPT FRIEND REQUEST
 
 router.post('/friendrequests/accept', verifyToken, async (req,res) =>{
-    
+    console.log("received request at /friendrequests/accept")
     let user = req.user
     if(!user){
         return res.status(404).send({error:"user not found"})
     }
     try{
 
+        console.log("1 ")
         //Check if friend request exists
         if(await checkIfFriendRequestExists(req.body.sender_user_id,user.id) === false){
             return res.status(404).send({error:"friend request not found"})
@@ -582,11 +574,12 @@ router.post('/friendrequests/accept', verifyToken, async (req,res) =>{
         if(await checkIfFriends(req.body.sender_user_id,user.id) === true){
             return res.status(400).send({error:"friend request already accepted"})
         }
+        console.log("2 ")
 
 
         await acceptFriendRequest(user.id, req.body.sender_user_id)
         //delete friend request
-        await deleteFriendRequest(user.id, req.body.sender_user_id)
+        await deleteFriendRequest(req.body.sender_user_id,user.id)
 
         //create conversation between two users
         await createPrivateConversation(user.id, req.body.sender_user_id)

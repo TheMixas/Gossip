@@ -41,27 +41,30 @@ export async function GetConversationWithMembers(conversationId){
 
     return conversation
 }
-export async function getUserConversations(userId, ourUserId,withAvatars=false){
-    const [rows] = await pool.query(`SELECT c.conversation_id,c.conversation_name
-    FROM conversation_members cm 
-    LEFT JOIN conversations c ON cm.conversation_id = c.conversation_id
-         WHERE cm.user_id = ?`,[userId])
+export async function getUserConversations(userId){
+    const [rows] = await pool.query(`
+    SELECT c.conversation_id, c.conversation_name, cmgs.message_value AS last_message
+FROM conversation_members cm
+LEFT JOIN conversations c ON cm.conversation_id = c.conversation_id
+LEFT JOIN (
+    SELECT conversation_id, message_value,createdAt
+    FROM conversations_messages
+    WHERE isFile = 0
+    ORDER BY createdAt DEsc
+    LIMIT 1
+    ) cmgs ON cm.conversation_id = cmgs.conversation_id
+WHERE cm.user_id = ?;
 
-    //EDITING THE RESULT -> Getting the conversations last message :)
-    //AND -> Appending other user id if not group chat
+    `,[userId])
 
     //NOTE: We should implement a conversation icon later on
     //NOTE: And check if group chat or not
+    //FIXME: This is a very bad way to do this, we should use a join query
     for(let i = 0; i < rows.length; i++){
-        let lastMessage = await getConversationsLastMessage(rows[i].conversation_id)
-        rows[i].lastMessage = lastMessage
         if(rows[i].isGroupChat) continue;
-        if(!withAvatars) continue;
         let members = await getConversationMembers(rows[i].conversation_id)
         //simple .find, limited to one element
-        let otherUserID = members.find(member => member.user_id !== ourUserId).user_id
-        
-        rows[i].userID= otherUserID
+        rows[i].userID = members.find(member => member.user_id !== userId).user_id
     }
     return rows
 }
@@ -90,7 +93,8 @@ export async function createPrivateConversation(user1Id,user2Id){
         await addUserToConversation(conversationId,user2Id)
         return conversationId
     }catch (e){
-        
+        console.log("Error encounreted when creating a conversation e: ",e)
+
     }
 
 }

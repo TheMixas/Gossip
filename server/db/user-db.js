@@ -7,7 +7,7 @@ import {
     getUserPostsPhotos,
     getUserRetweets
 } from "./post-db.js";
-import{userAvatarsDir,postsImagesDir} from "../app.js";
+import {postsImagesDir, userAvatarsDir} from "../app.js";
 import {queryUserInfoAndFriendInfo} from "./big-queries/queryUserInfoAndFriendInfo.js";
 import {readImagesFromPath} from "../utils/utils.js";
 
@@ -17,7 +17,7 @@ export async function createUser(username,name,gmail, password){
     try{
         const result = await pool.query(`INSERT INTO users (username, name, gmail, password)
     VALUES (?,?,?,?)`, [username,name,gmail,password])
-        return getUserById(result[0].insertId)
+        return getUserById(result[0].insertId, "id,username,name,gmail,created")
     }
     catch (e){
         console.log("sql e:", e)
@@ -25,7 +25,6 @@ export async function createUser(username,name,gmail, password){
 
 }
 export async function getUserById(id,selection="*"){
-    console.log("Getting user by id: ", id)
     try{
         const [rows] = await pool.query(`SELECT ${selection} FROM users WHERE id = ?`, [id])
         return rows[0];
@@ -38,9 +37,9 @@ export async function getUserByUsername(username,selection="*"){
     const [rows] = await pool.query(`SELECT ${selection} FROM users WHERE username = ?`, [username])
     return rows[0];
 }
-export async function getUserByEmail(email){
+export async function getUserByEmail(email, selection="*"){
     try{
-        const [rows] = await pool.query(`SELECT * FROM users WHERE gmail = ?`, [email])
+        const [rows] = await pool.query(`SELECT ${selection} FROM users WHERE gmail = ?`, [email])
         return rows[0];
     }
     catch (e){
@@ -103,7 +102,6 @@ export async function getUserProfile(our_id,profileUsername){
         user.photoPosts = await getUserPostsContainingPhotos(user.id,our_id,99,0)
         //STEP 9: Append user friends
         user.friends = await getFriends(user.id, our_id)
-        console.log("User friends: ", user.friends)
         //turn isFriend and isFriendRequestSent into boolean
         user.IsFriend = user.isFriend > 0
         user.IsFriendRequestSent = user.isFriendRequestSent > 0
@@ -330,12 +328,26 @@ export async function sendFriendRequest(senderId,recipientId){
     VALUES (?,?)`, [senderId,recipientId])
     return result
 }
+//Returns friend requests with all their info and images
 export async function getFriendRequests(id) {
-    const [rows] = await pool.query('SELECT sender_user_id FROM friend_requests f WHERE recipient_user_id = ?',[id]);
+    const [rows] = await pool.query(`
+    SELECT fr.sender_user_id, u.avatarPath,u.bannerPath, u.name, u.username
+FROM friend_requests fr
+INNER JOIN users u ON fr.sender_user_id = u.id
+WHERE fr.recipient_user_id = ?;
+    `,[id]);
     //
+    for (let i = 0; i < rows.length; i++) {
+        rows[i].avatar = readImagesFromPath(rows[i].avatarPath, true)
+        rows[i].banner = readImagesFromPath(rows[i].bannerPath, true)
+
+        rows[i].avatarPath = undefined
+        rows[i].bannerPath = undefined
+    }
     return rows
 }
 export async function acceptFriendRequest(senderId,recipientId){
+    console.log("Accepting friend request: ", senderId, recipientId)
     const result = await pool.query(`INSERT INTO friendships (user1_id, user2_id)
     VALUES (?,?)`, [senderId,recipientId])
     return result
@@ -343,8 +355,14 @@ export async function acceptFriendRequest(senderId,recipientId){
 
 //NOTE: Reject friend request
 export async function deleteFriendRequest(senderId, recipientId){
-    const result = await pool.query(`DELETE FROM friend_requests WHERE sender_user_id = ? AND recipient_user_id = ?`, [senderId,recipientId])
-    return result
+    console.log("Deleting friend request: ", senderId, recipientId)
+    try{
+        const result = await pool.query(`DELETE FROM friend_requests WHERE sender_user_id = ? AND recipient_user_id = ?`,
+            [senderId,recipientId])
+        return result
+    }catch (e) {
+        console.log("SQL error on friend request delete: ", e)
+    }
 }
 //NOTE: check if user is friends with another user. false / true
 //FIXED ?

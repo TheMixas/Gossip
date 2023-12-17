@@ -73,7 +73,7 @@ router.get('/posts/hottestPosts', checkToken,async (req,res) =>{
     const {limit = 200,offset =0} = req.body
     try{
 
-        hPosts = await getHottestPosts(req.user.id ?? null,offset,limit)
+        hPosts = await getHottestPosts(req.user?.id ?? null,offset,limit)
         //For eaach post, turn photo paths, orginal post photo paths, creator avatar and banner paths into base64
         for (let i = 0; i < hPosts.length; i++) {
             let pathsArray = []
@@ -133,6 +133,7 @@ router.get('/posts/hottestPosts', checkToken,async (req,res) =>{
         res.setHeader("Content-Type", "application/json");
         return res.status(200).send({hPosts})
     }catch(e){
+        console.log("error while getting hottest posts: ",e)
         res.status(500).send(e)
     }
 
