@@ -22,7 +22,7 @@ router.get('/initiate-forgot-password/:email', async (req, res) => {
         let token = crypto.randomBytes(5).toString('hex');
 
         //hash token with bcrypt
-        let hashedToken = await bcrypt.hash(token, 10)
+        let hashedToken = await bcrypt.hash(token, 2)
         //store token in db
         await storeResetPasswordToken(req.params.email, hashedToken)
         //send email with token and link

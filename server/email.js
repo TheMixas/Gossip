@@ -3,8 +3,9 @@ import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port:25,
-    secure: false,
+
+    port:process.env.NODE_ENV === "production" ? 465 : 25,
+    secure: process.env.NODE_ENV === "production",
     auth: {
         // TODO: replace `user` and `pass` values from <https://forwardemail.net>
         user: "gossip.official.no.replies@gmail.com",
