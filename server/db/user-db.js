@@ -1,5 +1,4 @@
 import {pool} from "./database.js";
-import fs from "fs";
 import {
     getUserLikedPosts,
     getUserPosts,
@@ -9,7 +8,7 @@ import {
 } from "./post-db.js";
 import {postsImagesDir, userAvatarsDir} from "../app.js";
 import {queryUserInfoAndFriendInfo} from "./big-queries/queryUserInfoAndFriendInfo.js";
-import {readImagesFromPath} from "../utils/utils.js";
+import {GetAvatarSafely, GetBannerSafely, GetImageSafely, readImagesFromPath} from "../utils/utils.js";
 
 
 export async function createUser(username,name,gmail, password){
@@ -69,8 +68,9 @@ export async function getUserProfile(our_id,profileUsername){
         }
         console.log("User profile info: ", user)
         //STEP 2: Append base64 image data
-        user.avatar = fs.readFileSync(userAvatarsDir + user.avatarPath).toString("base64")
-        user.banner = fs.readFileSync(userAvatarsDir + user.bannerPath).toString("base64")
+        //if avatar from fsreadfilessync is null, use default avatar
+       user.avatar = await GetAvatarSafely(user.avatarPath)
+        user.banner = await GetBannerSafely(user.bannerPath)
         user.avatarPath = undefined
         user.bannerPath = undefined
 
@@ -80,11 +80,14 @@ export async function getUserProfile(our_id,profileUsername){
         let postImagePaths = await getUserPostsPhotos(user.id)
         let postImages = []
         for (let path of postImagePaths) {
-            postImages.push(fs.readFileSync(postsImagesDir + path.image_path).toString("base64"))
+            postImages.push(
+                await GetImageSafely(path.image_path)
+            )
         }
         user.postImages = postImages
         //STEP 5: Append user posts
         //Query optimized
+        //FIXME: returns faulty like data (cant see own like)
         user.posts = await getUserPosts(user.id, our_id,99,0)
         // for(let post of user.posts){
         //     console.log("Post: ", post)
@@ -95,10 +98,14 @@ export async function getUserProfile(our_id,profileUsername){
         //     // }
         // }
         //STEP 6: Append user retweetts
+        //FIXME: returns faulty like data (cant see own like)
+
         user.retweets = await getUserRetweets(user.id,our_id,99,0)
         //STEP 7: Append user liked posts
         user.likedPosts = await getUserLikedPosts(user.id,our_id,99,0)
         //STEP 8: Append user posts with photos
+        //FIXME: returns faulty like data (cant see own like)
+
         user.photoPosts = await getUserPostsContainingPhotos(user.id,our_id,99,0)
         //STEP 9: Append user friends
         user.friends = await getFriends(user.id, our_id)
@@ -139,8 +146,8 @@ export async function getUserMiniProfile(our_id,profileId){
 FROM users u
 WHERE u.id =?;
 `,[our_id,our_id,our_id,our_id,profileId])[0]
-        user.avatar = readImagesFromPath(user.avatarPath, true)
-        user.banner = readImagesFromPath(user.bannerPath, true)
+        user.avatar = await GetAvatarSafely(user.avatarPath)
+        user.banner = await GetAvatarSafely(user.bannerPath)
         return user
     }catch (e) {
         
@@ -257,8 +264,8 @@ WHERE
 
     `,[our_id,our_id,our_id,our_id,id,id,id])
     for (let i = 0; i < rows.length; i++) {
-        rows[i].avatar = readImagesFromPath(rows[i].avatarPath, true)
-        rows[i].banner = readImagesFromPath(rows[i].bannerPath, true)
+        rows[i].avatar = await GetAvatarSafely(rows[i].avatarPath)
+        rows[i].banner = await GetBannerSafely(rows[i].bannerPath)
 
         rows[i].avatarPath = undefined
         rows[i].bannerPath = undefined
@@ -295,8 +302,8 @@ export async function getUsersByQuery(query, limit=99, offset, ownID){
     const result = await pool.query(`SELECT id, username, name, avatarPath,bannerPath, status FROM users WHERE username LIKE '%${query}%' OR name LIKE '%${query}%' LIMIT ? OFFSET ?`, [limit, offset])
     let users = result[0]
     for (let i = 0; i < users.length; i++) {
-        users[i].avatar = fs.readFileSync(userAvatarsDir + users[i].avatarPath).toString("base64")
-        users[i].banner = fs.readFileSync(userAvatarsDir + users[i].bannerPath).toString("base64")
+        users[i].avatar = await GetAvatarSafely(users[i].avatarPath)
+        users[i].banner = await GetBannerSafely(users[i].bannerPath)
         users[i].avatarPath = undefined
         users[i].bannerPath = undefined
         users[i].isFriend = await checkIfFriends(users[i].id, ownID)
@@ -338,8 +345,8 @@ WHERE fr.recipient_user_id = ?;
     `,[id]);
     //
     for (let i = 0; i < rows.length; i++) {
-        rows[i].avatar = readImagesFromPath(rows[i].avatarPath, true)
-        rows[i].banner = readImagesFromPath(rows[i].bannerPath, true)
+        rows[i].avatar = await GetAvatarSafely(rows[i].avatarPath)
+        rows[i].banner = await GetBannerSafely(rows[i].bannerPath)
 
         rows[i].avatarPath = undefined
         rows[i].bannerPath = undefined

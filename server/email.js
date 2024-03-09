@@ -7,9 +7,8 @@ const transporter = nodemailer.createTransport({
     port:process.env.NODE_ENV === "production" ? 465 : 25,
     secure: process.env.NODE_ENV === "production",
     auth: {
-        // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-        user: "gossip.official.no.replies@gmail.com",
-        pass: "khji ziyg kolx gkad",
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASS
     },
 });
 

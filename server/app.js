@@ -12,10 +12,9 @@ export const userAvatarsDir = __dirname + "/user_images/"
 export const postsImagesDir = __dirname + "/user_posts_images/"
 export const messageImagesDir = __dirname + "/message_imgs/"
 
-export let origin = process.env.NODE_ENV === "production" ? 'https://gossip-server-c6dd76b8a875.herokuapp.com' : ['http://localhost:3000']
+export let origin = process.env.NODE_ENV === "production" ? 'https://gossip-server-c6dd76b8a875.herokuapp.com' : 'http://localhost:3000'
 
 
-// const io = new Server(server)
 import bodyParser from "body-parser";
 
 import user_router from './/routers/user-router.js'
@@ -35,6 +34,7 @@ import {getUserById} from "./db/user-db.js";
 import {fileURLToPath} from "url";
 import path from "path";
 import fs from "fs";
+import {incrementS3GetCount, incrementS3PutCount, receiveS3GetCount} from "./db/s3-stats-db.js";
 
 
 if(process.env.NODE_ENV === "production"){
@@ -45,12 +45,13 @@ if(process.env.NODE_ENV === "production"){
 console.log("origin: ", origin)
 let corsOptions = {
     origin,
-    methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'],
+    methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
     credentials: true
+    //limit: 3mb,
 }
 const io = new Server(server,
     {
-        cors:corsOptions
+        cors:corsOptions,
     });
 app.use(express.static(path.join(__dirname + '/public')));
 app.get('/koko', (req, res) => {
@@ -61,7 +62,8 @@ app.get('/koko2/1', (req, res) => {
 })
 
 app.use(cors(corsOptions))
-app.use(express.json())
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(postRouter)
 app.use(user_router)
 app.use(chat_router)
@@ -128,10 +130,11 @@ function getSocketFromAuthedSockets(id){
     })[0].socket
 }
 
+const MAX_PACKET_SIZE = 2097152; // 2MB in bytes
 
 //Authenticate socket before connecting
 io.use(async (socket, next) => {
-    
+    console.log("authenticating socket")
     const user = await getUserFromSocketCookie(socket.handshake.headers.cookie)
     if (!user) {
         return next(new Error("invalid token"))
@@ -154,6 +157,12 @@ io.on('connection', async (socket) => {
     })
     socket.on('private chat message', async (receiverID, body, media,conversationID) => {
         try{
+            const dataSize = 4096
+            if (dataSize > MAX_PACKET_SIZE) {
+                console.log('Data exceeds maximum packet size');
+                return;
+            }
+
             console.log("starting to send private chat message")
             
             let conversation_id = conversationID
@@ -167,21 +176,23 @@ io.on('connection', async (socket) => {
                 await sendMessageToUser(user.id, receiverID, body, false,conversation_id)
             }
 
-            console.log("messages media: ", media)
             //Loop media and send it
             media.map(async media => {
                 //NOTE: send media
-                console.log("sending media: ", media)
                 await sendMessageToUser(user.id, receiverID, media, true,conversation_id)
             })
         }catch (e) {
-            
+            console.log("error sending private chat message: ", e)
         }
 
     })
     socket.on('group chat message', async (conversationID, body,media )=> {
         try{
-            
+            const dataSize = Buffer.byteLength(JSON.stringify({receiverID, body, media, conversationID}), 'utf8');
+            if (dataSize > MAX_PACKET_SIZE) {
+                console.log('Data exceeds maximum packet size');
+                return;
+            }
             //NOTE: send text
             await sendMessageToConversation(socket.id, conversationID, body, false)
             media.map(async media => {
@@ -217,17 +228,14 @@ async function sendMessageToConversation(socketID, conversationID, body, isFile)
 
 //send message to user
 async function sendMessageToUser(senderID, receiverID, body, isFile,conversationID) {
+    console.log("sending message to user, conversationID: ", conversationID)
     //do some validation,
     try{
-        //get user from reciever username
-        let receiver = await getUserById(receiverID)
-        //store message in server
-        let user = await getUserById(senderID)
+
 
         //if user is not in conversation, create conversation, check first
         let conversation = await getConversation(conversationID)
 
-        
         
         await storeMessage(conversation.conversation_id, senderID, body, isFile)
 
@@ -237,29 +245,19 @@ async function sendMessageToUser(senderID, receiverID, body, isFile,conversation
         let socket = getSocketFromAuthedSockets(receiverID)
         
         if(!socket){
-            
+            console.log("socket not found")
             return
         }
 
-        
         io.to(getSocketFromAuthedSockets(receiverID).emit('chat message', {value:body, isFile,sender_id:senderID}))
     }catch (e){
-        
+        console.log('error sending message to user: ', e)
         return e
     }
 
 }
 
 
-// 
-// 
-// 
-// 
-// 
-//
-// console.log(__dirname)
-// console.log(userAvatarsDir)
-// console.log("NODE_ENV",process.env.NODE_ENV)
-// console.log(await fs.readFileSync(`${userAvatarsDir}/avatar-1692568900542-685106487.jpg`))
 let port = process.env.PORT || 8080
+
 server.listen(port, () => console.log(`listening on *:${port}`));

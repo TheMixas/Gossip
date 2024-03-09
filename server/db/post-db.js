@@ -2,7 +2,7 @@ import {pool} from "./database.js";
 import fs from "fs";
 import {getUserById} from "./user-db.js";
 import {postsImagesDir, userAvatarsDir} from "../app.js";
-import {readAllPostsImages} from "../utils/utils.js";
+import {GetAvatarSafely, GetImageSafely, readAllPostsImages} from "../utils/utils.js";
 
 //FIXME: STOP QUERYING MORE THAN ONCE IN A FUNCTION
 
@@ -342,7 +342,7 @@ LIMIT ?, ?
         // }
 
         // console.log("Queried specific users posts: ", rows)
-        return readAllPostsImages(rows)
+        return await readAllPostsImages(rows)
     } catch (e) {
         console.log("Encountered error while quering specific users posts: ", e)
         return null
@@ -362,7 +362,8 @@ export async function getPostsByQuery(query,limit=99,offset=0,ownId=undefined){
 
     for (let i = 0; i < rows.length; i++) {
         let creator = await getUserById(rows[i].creator_user_id,"avatarPath,name,username")
-        rows[i].avatar = fs.readFileSync(userAvatarsDir+creator.avatarPath).toString('base64')
+        rows[i].avatar = await GetAvatarSafely(creator.avatarPath)
+
         rows[i].name = creator.name
         rows[i].username = creator.username
         const [isLiked] = await pool.query(`SELECT * FROM post_likes WHERE liked_post_id = ? AND liker_user_id = ? OR liker_user_id = ? AND liked_post_id = ?`,[rows[i].id,ownId,ownId,rows[i].id])
@@ -375,7 +376,10 @@ export async function getPostsByQuery(query,limit=99,offset=0,ownId=undefined){
         let photoPaths = await getPostPhotosPaths(rows[i].id)
         let photos = []
         for(let photoPath of photoPaths){
-            photos.push(fs.readFileSync(postsImagesDir+photoPath.image_path).toString('base64'))
+            photos.push(
+                await GetImageSafely(photoPath.image_path)
+                // fs.readFileSync(postsImagesDir+photoPath.image_path).toString('base64')
+            )
         }
         //NOTE: Change name of photos if needed for client
         rows[i].photos = photos
@@ -397,7 +401,7 @@ SELECT
     p.creator_user_id, 
     p.created_at,
     p.original_post_id,
-    p.isRetweet,
+    p.isRetweet,  
     p.isComment,
     COALESCE(pc.comment_count, 0) AS comment_count,
     COALESCE(pr.retweet_count, 0) AS retweet_count,
@@ -478,7 +482,7 @@ LIMIT ?, ?
 
     `,[ownId,userId,offset,limit])
 
-    return readAllPostsImages(rows)
+    return await readAllPostsImages(rows)
 }
 
 //NOTE: Get retweets that could contain photos with photos appended on .photos
@@ -568,7 +572,7 @@ ORDER BY (pc.comment_count + pr.retweet_count + pl.like_count) DESC, p.created_a
 LIMIT ?, ?;
 `,[ownId,userId,offset,limit])
 
-   return readAllPostsImages(rows)
+   return await readAllPostsImages(rows)
 }
 
 
@@ -633,7 +637,7 @@ LEFT JOIN (
 LEFT JOIN (
     SELECT liked_post_id, liker_user_id
     FROM post_likes
-    WHERE liker_user_id = 27
+    WHERE liker_user_id = ?
 ) plu ON p.id = plu.liked_post_id
 LEFT JOIN posts_images pi ON p.id = pi.post_id
 LEFT JOIN posts op ON p.original_post_id = op.id
@@ -667,9 +671,9 @@ GROUP BY p.id
 ORDER BY (pc.comment_count + pr.retweet_count + pl.like_count) DESC, p.created_at DESC
 LIMIT ?,?;
 
-    `,[ownId,userId,offset,limit])
+    `,[userId,ownId,userId,offset,limit])
 
 
     //apend images
-    return readAllPostsImages(rows)
+    return await readAllPostsImages(rows)
 }

@@ -9,6 +9,7 @@ import {
 import {getFriendIds,getUserById} from "../db/user-db.js";
 import fs from "fs";
 import {messageImagesDir} from "../app.js";
+import {GetImageSafely} from "../utils/utils.js";
 
 
 const router = express.Router()
@@ -16,49 +17,22 @@ const router = express.Router()
 router.get('/chat/get-conversations', verifyToken, async (req, res) => {
     const user = req.user
     const conversations = await getUserConversations(user.id, req.user.id,true)
-    
+
     //set json response
     res.setHeader('Content-Type', 'application/json')
     return res.status(200).send({conversations: conversations})
 })
-//get conversation messages
-// router.get('/chat/get-conversation/:conversationId', verifyToken, async (req, res) => {
-//     const user = req.user
-//     const conversationId = req.params.conversationId
-//     const conversation = await getConversation(conversationId)
-//     if(!conversation){
-//         return res.status(404).send({error:"conversation not found"})
-//     }
-//     //NOTE: check if user is a member of the conversation
-//     let members = await getConversationMembers(conversationId)
-//     if(!members.find(member => member.user_id === user.id)){
-//         return res.status(401).send({error:"unauthorized"})
-//     }
-//     let messages = await getConversationMessages(conversationId)
-//     //for each file message
-//     for(let i = 0; i < messages.length; i++){
-//         if(messages[i].isFile){
-//             let fileData = fs.readFileSync(messageImagesDir + messages[i].message_value).toString('base64')
-//             //convert to blob
-//             messages[i].message_value = fileData
-//             //
-//             
-//         }
-//     }
-//
-//     res.setHeader('Content-Type', 'application/json')
-//     return res.status(200).send({messages})
-// })
+
 
 //get a ?private conversation
 router.get('/chat/get-private-conversation/:conversationID', verifyToken, async (req, res) => {
     try{
-
-        
+        console.log('chat-router.js get-private-conversation: called')
         const user = req.user
         const convID = req.params.conversationID
+        console.log('attempting to get conversation messages')
         const conversation = await GetConversationWithMembers(convID)
-
+        console.log("got conversation: ", conversation.conversation_name)
         if(!conversation){
             return res.status(404).send({error:"conversation not found"})
         }
@@ -69,8 +43,8 @@ router.get('/chat/get-private-conversation/:conversationID', verifyToken, async 
             if(messages[i].isFile) {
                 let fileData = undefined;
                     try{
-                        fileData = fs.readFileSync(messageImagesDir + messages[i].message_value).toString('base64')
-
+                        fileData = await GetImageSafely(messages[i].message_value)
+                        // fileData = fs.readFileSync(messageImagesDir + messages[i].message_value).toString('base64')
                     }catch (e) {
                         console.log(e)
                         continue

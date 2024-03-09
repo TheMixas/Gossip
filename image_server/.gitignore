@@ -1,0 +1,11 @@
+# Ignore node modules
+node_modules
+
+# Ignore .env file
+.env
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+test_http
