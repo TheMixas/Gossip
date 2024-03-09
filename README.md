@@ -4,7 +4,7 @@
 
 <p align="center"><img src="https://badgen.net/static/Dynamic User Content/📦/green" alt="shields"><img src="https://badgen.net/static/AWS S3/📦/green" alt="shields"><img src="https://badgen.net/static/S3 Caching/📦/green" alt="shields"><img src="https://badgen.net/static/User authentication/🔑/purple" alt="shields"><img src="https://badgen.net/static/Password recovery/🔑/purple" alt="shields"><img src="https://badgen.net/static/User profiles/✨/blue" alt="shields"><img src="https://badgen.net/static/Live chatting/✨/blue" alt="shields"><img src="https://badgen.net/static/Post reposting/✨/blue" alt="shields"><img src="https://badgen.net/static/Post commenting/✨/blue" alt="shields"><img src="https://badgen.net/static/Post liking/✨/blue" alt="shields"><img src="https://badgen.net/static/Mobile responsive/🛠️/black" alt="shields"></p>
 
-<h2>🚀 Demo</h2>
+<h2>🚀 Live Website</h2>
 
 [https://gossip-server-c6dd76b8a875.herokuapp.com/](https://gossip-server-c6dd76b8a875.herokuapp.com/)
 
