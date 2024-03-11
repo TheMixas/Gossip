@@ -30,3 +30,6 @@ Technologies used in the project:
 
 *   Node
 *   React
+*   MySQL
+*   AWS 3
+*   Heroku
