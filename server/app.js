@@ -1,22 +1,7 @@
 import express from 'express'
-const app = express()
 import http from 'http'
-const server = http.createServer(app);
 import { Server } from "socket.io";
-import session from "express-session";
-const __filename = fileURLToPath(import.meta.url);
-
-
-export const __dirname = path.dirname(__filename);
-export const userAvatarsDir = __dirname + "/user_images/"
-export const postsImagesDir = __dirname + "/user_posts_images/"
-export const messageImagesDir = __dirname + "/message_imgs/"
-
-export let origin = process.env.NODE_ENV === "production" ? 'https://gossip-server-c6dd76b8a875.herokuapp.com' : 'http://localhost:3000'
-
-
 import bodyParser from "body-parser";
-
 import user_router from './/routers/user-router.js'
 import postRouter    from "./routers/post-router.js";
 import chat_router   from "./routers/chat-router.js";
@@ -29,20 +14,20 @@ import {
     getUserConversations,
     storeMessage
 } from "./db/conversation-db.js";
-import {getFriendRequests, getMutuals, getUserByUsername, getUserStats} from "./db/user-db.js";
-import {getUserById} from "./db/user-db.js";
 import {fileURLToPath} from "url";
 import path from "path";
-import fs from "fs";
-import {incrementS3GetCount, incrementS3PutCount, receiveS3GetCount} from "./db/s3-stats-db.js";
 
+const __filename = fileURLToPath(import.meta.url);
 
-if(process.env.NODE_ENV === "production"){
-    console.log("production")
-}else {
-    console.log("development")
-}
-console.log("origin: ", origin)
+export let origin = process.env.NODE_ENV === "production" ? 'https://gossip-server-c6dd76b8a875.herokuapp.com' : 'http://localhost:3000'
+export const __dirname = path.dirname(__filename);
+export const userAvatarsDir = __dirname + "/user_images/"
+export const postsImagesDir = __dirname + "/user_posts_images/"
+export const messageImagesDir = __dirname + "/message_imgs/"
+
+const app = express()
+const server = http.createServer(app);
+
 let corsOptions = {
     origin,
     methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
@@ -53,13 +38,9 @@ const io = new Server(server,
     {
         cors:corsOptions,
     });
+
 app.use(express.static(path.join(__dirname + '/public')));
-app.get('/koko', (req, res) => {
-    res.send({koko: "koko"})
-})
-app.get('/koko2/1', (req, res) => {
-    res.send({koko: "koko2"})
-})
+
 
 app.use(cors(corsOptions))
 app.use(express.json({ limit: '50mb' }));
