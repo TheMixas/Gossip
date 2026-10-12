@@ -1,6 +1,7 @@
 import AWS from 'aws-sdk';
 import {SetToCache} from "./cache-utils.js";
 import {incrementS3GetCount, incrementS3PutCount, receiveS3GetCount, receiveS3PutCount} from "../db/s3-stats-db.js";
+import {localDelete, localGet, localPut, useLocalStorage} from "./local-storage.js";
 
 const s3 = new AWS.S3();
 
@@ -9,6 +10,11 @@ const s3 = new AWS.S3();
 //file.Body is the buffer of the file
 export async function uploadToS3(file, name) {
     try {
+        if (useLocalStorage()) {
+            await localPut(file.buffer, name)
+            await SetToCache(name, file.buffer, 60 * 60 * 24).catch(() => {})
+            return
+        }
         if (process.env.NODE_ENV === "development") {
             throw new Error("S3 upload not allowed in development")
         }
@@ -48,6 +54,11 @@ export async function uploadToS3(file, name) {
 //might throw error , use catch block
 //wil try to cache the file if its found
 export async function getFromS3AndCacheIt(name) {
+    if (useLocalStorage()) {
+        const data = await localGet(name)
+        SetToCache(name, data.Body, 60 * 60 * 24).catch(() => {})
+        return data
+    }
 
     if(process.env.NODE_ENV === "development"){
         throw new Error("S3 get not allowed in development")
@@ -95,6 +106,9 @@ export async function getFromS3AndCacheIt(name) {
 }
 
 export async function deleteFromS3(name) {
+    if (useLocalStorage()) {
+        return localDelete(name).catch((e) => console.log("local delete failed: ", e.message))
+    }
     const params = {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: name

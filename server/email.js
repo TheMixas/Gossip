@@ -14,6 +14,9 @@ const transporter = nodemailer.createTransport({
 
 // async.await is not allowed in global scope, must use a wrapper
 export default async function sendEmail(template) {
+    if (!process.env.EMAIL || !process.env.EMAIL_PASS) {
+        throw new Error("Password reset emails are turned off on this demo deployment.")
+    }
     // send mail with defined transport object
     console.log("sending email with template: ", template)
     const info = await transporter.sendMail(template);

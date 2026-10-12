@@ -16,10 +16,14 @@ import {
 } from "./db/conversation-db.js";
 import {fileURLToPath} from "url";
 import path from "path";
+import {migrate} from "./db/migrate.js";
 
 const __filename = fileURLToPath(import.meta.url);
 
-export let origin = process.env.NODE_ENV === "production" ? 'https://gossip-server-c6dd76b8a875.herokuapp.com' : 'http://localhost:3000'
+// Production: set ALLOWED_ORIGINS (comma-separated), e.g. "https://gossip.example.com".
+export let origin = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+    : 'http://localhost:3000'
 export const __dirname = path.dirname(__filename);
 export const userAvatarsDir = __dirname + "/user_images/"
 export const postsImagesDir = __dirname + "/user_posts_images/"
@@ -241,4 +245,6 @@ async function sendMessageToUser(senderID, receiverID, body, isFile,conversation
 
 let port = process.env.PORT || 8080
 
+// Make sure the tables exist (and the DB is reachable) before accepting traffic.
+await migrate();
 server.listen(port, () => console.log(`listening on *:${port}`));
