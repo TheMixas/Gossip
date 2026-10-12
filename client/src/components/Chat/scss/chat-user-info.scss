@@ -1,0 +1,29 @@
+@use '../../../scss/vars' as vars;
+.members{
+
+
+  box-sizing: border-box;
+  display:flex;
+  position: relative;
+  overflow-y: scroll;
+  grid-column: 3/4;
+  grid-row: 1/-1;
+  flex-direction: column;
+  @media only screen and (max-width: 1200px) {
+    grid-column: 2/4;
+  }
+  background-color: vars.$dark-2;
+}
+.close-button{
+  position: absolute;
+
+  top: 0.3rem;
+  right: 0rem;
+    color: white;
+    font-size: 3rem;
+    cursor: pointer;
+  text-align: end;
+  padding-right: 1rem;
+  box-sizing: border-box;
+  font-family: "HoloLens MDL2 Assets";
+}

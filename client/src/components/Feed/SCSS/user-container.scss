@@ -1,0 +1,120 @@
+@use '../../../scss/vars.scss' as vars;
+.user-container{
+  display:flex;
+  align-items: center;
+  gap:3rem;
+  padding: 2rem;
+  box-sizing: border-box;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: 13rem;
+  &--top-background{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 50%;
+    //background-image: url("../../../imgs/banner.png");
+    background-color:white;
+    background-size: cover;
+    background-position: center;
+  }
+  &--bottom-background{
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left:0;
+    bottom: 0;
+    height: 50%;
+
+    background-color: vars.$dark-3;
+  }
+  &__avatar-area{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    &--img{
+      height: 6.5rem;
+      width: 6.5rem;
+      z-index: 2;
+      border-radius: 5px;
+      border: 3px solid vars.$dark-3;
+      box-shadow: 0px 0px 5px vars.$light-1;
+      object-fit: cover;
+    }
+    &--send-button{
+        height: 2.5rem;
+        border-radius: 7px;
+        background-color: vars.$primary;
+        box-shadow: 0px 0px 5px vars.$dark-2;
+        padding: 0.2rem 0.5rem;
+        z-index: 3;
+        cursor: pointer;
+        transition: all .3s ease-in-out;
+        &:hover{
+            transform: scale(1.1);
+        }
+
+    }
+    &--sent-button{
+      height: 2.5rem;
+      border-radius: 7px;
+      background-color: vars.$dark-2;
+      box-shadow: 0px 0px 5px vars.$dark-2;
+      padding: 0.2rem 0.5rem;
+      z-index: 3;
+      cursor: pointer;
+      transition: all .3s ease-in-out;
+      &:hover{
+        transform: scale(1.1);
+      }
+
+    }
+  }
+  &__info{
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+    gap:.8rem;
+
+    &__top-layer{
+      display: flex;
+      //background-color: white;
+      gap: .5rem;
+      &--username{
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: vars.$light-1;
+        text-shadow: 0px 0px 5px vars.$dark-3;
+        background-color: vars.$dark-2;
+        padding: .2rem .5rem;
+        border-radius: 7px;
+      }
+      &--name{
+        font-size: 1.7rem;
+        font-weight: 600;
+        color: vars.$light-1;
+        text-shadow: 0px 0px 5px vars.$dark-3;
+        background-color: vars.$dark-2;
+        padding: .2rem .5rem;
+        border-radius: 7px;
+
+      }
+    }
+    &__bottom-layer{
+      display: flex;
+      &--bio{
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: vars.$light-1;
+        background-color: vars.$dark-2;
+        padding: .2rem .5rem;
+        border-radius: 7px;
+      }
+    }
+  }
+}

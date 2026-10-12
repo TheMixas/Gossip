@@ -1,0 +1,128 @@
+@use './../../../scss/vars' as vars;
+.create-tweet{
+  background-color: vars.$dark-1;
+  border-radius: 5px;
+  &__container{
+    background-color: vars.$dark-3;
+
+    //width: 53rem;
+    padding: .5rem;
+    border-radius: 3px;
+    box-sizing: border-box;
+  }
+  //border: 1px solid #e1e8ed;
+
+  //background-color: rgba(255, 255, 255, 0.92);
+  &__input-and-actions{
+    display: flex;
+  }
+  &__actions{
+    display:flex;
+    justify-content: space-between;
+  }
+
+  &__char-limit{
+    color: lightgray;
+    font-size: 12px;
+    padding-left: .5rem;
+    position: relative;
+
+    text-align: center;
+    width: 43px;
+
+  }
+
+  &__input{
+    border: 1px solid var(--border);
+    background-color: vars.$dark-1;
+    border-radius: 3px;
+    display: inline-block;
+    font: 18px var(--font);
+    height: 5rem;
+    padding: 5px;
+    //padding-right: 40px;
+    box-sizing: border-box;
+    resize: none;
+    scrollbar-width: thin;
+
+
+    //width: 476px;
+    width: 100%;
+  }
+
+  &__media-container{
+    position: relative;
+  }
+  &__media{
+    cursor: pointer;
+    height: 3rem;
+    width: 3rem;
+    background: url("../../../svgs/media.svg") no-repeat;
+    background-size: contain;
+
+  }
+
+  &__focused{
+    &--post-button{
+      float: right;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 1rem;
+      width: 7rem;
+      height: 3.5rem;
+      background-color: vars.$primary;
+
+    }
+  }
+  &__audience{
+    position: relative;
+    margin-left: 39px;
+    margin-bottom: 5px;
+
+  }
+}
+.files-container{
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: min-content;
+  box-sizing: border-box;
+  gap: 1rem;
+  &__file-container{
+    width: 10rem;
+    height: 10rem;
+    padding: 1rem;
+    &--img{
+      width: 100%;
+      height: 100%;
+      border-radius: .5rem;
+      object-fit:cover;
+    }
+    &--remove{
+      position: relative;
+      margin-top: -10rem;
+      margin-left: 7.4rem;
+
+      background-color: rgba(0,0,0, 0.5);
+      border-radius: 1rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      //add background as svg
+      &::before{
+        //font-family: 'Architects Daughter', 'Jua','Lexend Mega', cursive;
+        content: "";
+        background: url("../../../svgs/white-cancel.svg") no-repeat ;
+        background-size: cover;
+        cursor: pointer;
+
+        width:100%;
+        height: 100%;
+        //font-size: 2rem;
+        display: block;
+
+      }
+    }
+  }
+
+}

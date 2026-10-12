@@ -1,0 +1,116 @@
+@use './vars' as vars;
+
+.navbar{
+
+  background-color: vars.$dark-3;
+  &__left-box{
+    display: flex;
+    width: 30%;
+    align-self: center;
+    justify-content: center;
+    gap: 1rem;
+
+    @media only screen and (max-width: 68.75em) {
+      width: 50%;
+    }
+    @media only screen and (max-width: 480px) {
+      width: 100%;
+    }
+    //@media only screen and (max-width: 480px) {
+    //  width: 50%;
+    //}
+  }
+  &__links{
+    display: flex;
+    @media only screen and (max-width: 480px) {
+      gap: 0.1rem;
+    }
+  }
+  &__center-box{
+        display: flex;
+        width: 40%;
+    align-items: center;
+      justify-content: center;
+    align-self: center;
+      gap: 1rem;
+
+      @media only screen and (max-width: 68.75em) {
+        width: 0%;
+      }
+    }
+  &__right-box{
+    display: flex;
+    width: 30%;
+    justify-content: center;
+    align-self: center;
+    align-items: center;
+    gap: 1rem;
+    @media only screen and (max-width: 68.75em) {
+      width: 50%;
+    }
+
+    @media only screen and (max-width: 480px) {
+      width: 100%;
+    }
+  }
+  &__line{
+    width: 100%;
+    height: 0.1rem;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  &__links a{
+
+    color: vars.$light-1;
+    padding: 13px 15px;
+    top: 8px;
+    border-bottom: 3px solid transparent;
+    transition: 0.2s;
+    text-decoration: none;
+    font-size: 1.3rem;
+    &:hover{
+      box-shadow: -4px -5px 0px -4px vars.$primary inset;
+      color: vars.$primary;
+      transition: 0.2s;
+    }
+
+
+  }
+  display: flex;
+  width: 100%;
+  height: 5rem;
+  justify-content: center;
+}
+.home-logo{
+    width: 2.5rem;
+    height: 2.5rem;
+
+    background: url("../svgs/house.svg") no-repeat;
+    background-size: contain;
+  &:hover{
+    cursor: pointer;
+  }
+}
+.header{
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 3rem;
+  z-index: 999;
+  margin-bottom: 4.4rem;
+
+}
+
+
+//change navbar items on mobile
+.user-profile-dropdown{
+  //lower em
+  @media only screen and (max-width: 68.75em) {
+    display: none;
+  }
+}
+.button__create-post{
+  //lower em
+    @media only screen and (max-width: 68.75em) {
+        display: none;
+    }
+}

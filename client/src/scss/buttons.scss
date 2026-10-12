@@ -1,0 +1,32 @@
+
+@use './vars' as vars;
+//dont use this button anywhere but in the navbar
+.button__create-post{
+  height: 3.3rem;
+  width: 9rem;
+  border:none;
+  border-radius: 5px;
+  background-color: vars.$primary;
+  cursor: pointer;
+  &:hover{
+    color:lightblue;
+  }
+  & p{
+    font-size: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 0;
+    //margin-left: 2.7rem;
+  }
+}
+.search-button {
+  height: 2rem;
+  width: 2rem;
+  border: none;
+  float: right;
+  right: 2.7rem;
+  cursor: pointer;
+  position: relative;
+  background: url('../svgs/search.svg') no-repeat;
+
+  background-size: contain;
+}
