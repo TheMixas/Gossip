@@ -1,5 +1,5 @@
 {
-  "name": "nav-bar-test",
+  "name": "gossip-client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -22,10 +22,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "CI=false react-scripts build --env.NODE_ENV=production",
+    "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "heroku-postbuild": "npm install && npm run build --env.NODE_ENV=production"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

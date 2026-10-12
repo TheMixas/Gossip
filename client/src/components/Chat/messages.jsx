@@ -12,7 +12,6 @@ import ImageMessage from "./ImageMessage";
 import {getID} from "../../utils/Utils";
 import '../../scss/vars.scss'
 import {
-    fetchConversationMessages,
     fetchFullConversation,
     fetchSuggestedFriends,
     fetchUserConversations

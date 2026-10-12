@@ -2,7 +2,6 @@ import {useEffect, useState} from "react";
 import {handleCreatePostForm} from "../../utils/PostCalls"
 
 import FileContainer from "./FileContainer";
-import SuggestedUsernameBox from "./SuggestedUsernamesBox";
 import {convertToBase64} from "../../utils/Utils";
 import {isAuthenticated} from "../../utils/AuthCalls";
 import {notifyError} from "../../utils/toast";
