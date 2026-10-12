@@ -198,6 +198,7 @@ router.post('/users/login', async (req,res) =>{
         let expireTime = time + 1000 * 360000;
         now.setTime(expireTime);
         res.set("Set-Cookie", `token1=${token}; HttpOnly; Path=/; expires=${now.toUTCString()};`)
+        delete user.password // never send the password hash to the browser
         return res.status(200).send(user)
     }
     catch (e) {

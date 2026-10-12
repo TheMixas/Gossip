@@ -299,7 +299,7 @@ export async function deleteAccount(id){
 
 //Note: Get users based on query
 export async function getUsersByQuery(query, limit=99, offset, ownID){
-    const result = await pool.query(`SELECT id, username, name, avatarPath,bannerPath, status FROM users WHERE username LIKE '%${query}%' OR name LIKE '%${query}%' LIMIT ? OFFSET ?`, [limit, offset])
+    const result = await pool.query(`SELECT id, username, name, avatarPath,bannerPath, status FROM users WHERE username LIKE ? OR name LIKE ? LIMIT ? OFFSET ?`, [`%${query}%`, `%${query}%`, limit, offset])
     let users = result[0]
     for (let i = 0; i < users.length; i++) {
         users[i].avatar = await GetAvatarSafely(users[i].avatarPath)

@@ -5,14 +5,19 @@ import {storeFile} from "../store-files.js";
 
 dotenv.config()
 
-export const pool = mysql.createPool({
+const rawPool = mysql.createPool({
     host:process.env.MYSQL_HOST,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
     port:process.env.MYSQL_PORT,
-
-}).promise()
+})
+// The feed queries were written for MySQL's older, looser GROUP BY rules.
+// MySQL 8 enables ONLY_FULL_GROUP_BY by default, so turn it off for this app's sessions only.
+rawPool.on('connection', (conn) => {
+    conn.query("SET SESSION sql_mode = (SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''))")
+})
+export const pool = rawPool.promise()
 
 
 
@@ -23,7 +28,7 @@ export const pool = mysql.createPool({
 
 
 export async function getQueriedPosts(query) {
-    const [rows] = await pool.query(`SELECT * FROM posts p WHERE p.body LIKE '%${query}%'`);
+    const [rows] = await pool.query(`SELECT * FROM posts p WHERE p.body LIKE ?`, [`%${query}%`]);
     return rows
 }
 

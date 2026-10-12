@@ -148,7 +148,7 @@ export async function getFriendsPosts(id,limit,offset) {
     return rows
 }
 export async function getPostsLikes(ids) {
-    const [rows] = await pool.query(`SELECT liker_user_id FROM post_likes WHERE liked_post_id IN (${ids})`);
+    const [rows] = await pool.query(`SELECT liker_user_id FROM post_likes WHERE liked_post_id IN (?)`, [ids]);
     return rows
 }
 
@@ -354,9 +354,9 @@ LIMIT ?, ?
 export async function getPostsByQuery(query,limit=99,offset=0,ownId=undefined){
     //NOTE: with creator avatars appends creator avatar and banner
     const [rows] = await pool.query(`SELECT * FROM posts 
-         WHERE body LIKE '%${query}%'
+         WHERE body LIKE ?
          AND isComment = false
-         ORDER BY created_at DESC LIMIT ?,?`,[offset,limit])
+         ORDER BY created_at DESC LIMIT ?,?`,[`%${query}%`,offset,limit])
 
     let user = await getUserById(ownId,"id")
 
