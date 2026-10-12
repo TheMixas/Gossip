@@ -1,11 +1,13 @@
 .small-avatar{
   &--avatar-link{
     float: left;
+    grid-column: 1/2;
+    grid-row: full-start/full-end;
   }
   &--img {
     border-radius: .5rem;
     object-fit: cover;
-    width: 6rem;
-    height: 6rem;
+    //width: 6rem;
+    //height: 6rem;
   }
 }

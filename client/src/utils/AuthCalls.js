@@ -1,10 +1,13 @@
 import {apiURL} from "../api";
+import {notifyError} from "./toast";
 
+//Checks if localstorage has a user object
 export function isAuthenticated(){
     
     return !!localStorage.getItem('gossip_user');
 }
 export function register(info={}, toggleAuthPopUp){
+    console.log("Called register")
     
 fetch(`${apiURL}/users/register`, {
         method: 'POST',
@@ -21,11 +24,13 @@ fetch(`${apiURL}/users/register`, {
             
             localStorage.setItem('gossip_user', JSON.stringify(response));
             toggleAuthPopUp();
+            window.location.reload();
+
 
         }
     ).catch((error)=>{
         
-    alert(`register failed: ${error}`)
+    notifyError(`register failed: ${error}`)
     })
 
 }
@@ -46,11 +51,13 @@ export function login(info={},toggleAuthPopUp){
             
             localStorage.setItem('gossip_user', JSON.stringify(response));
             toggleAuthPopUp();
+            window.location.reload();
 
         }
     ).catch((error)=>{
         
-        alert(`login failed: ${error}`)
+
+        notifyError(`login failed: ${error}`)
     })
 
 }

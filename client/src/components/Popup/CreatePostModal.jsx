@@ -2,6 +2,8 @@ import InputField from "../_Shared/InputField";
 import {CreatePostModalContext} from "../context/create-post-modal.context";
 import {useContext} from "react";
 import './SCSS/create-post-modal.scss'
+import {toast} from "react-toastify";
+import {notifySuccess} from "../../utils/toast";
 
 export default function CreatePostModal() {
 
@@ -23,7 +25,7 @@ export default function CreatePostModal() {
                         </div>
                         <div className="create-post-container__right-side__input-container">
                             <InputField
-                                onSuccess={()=>alert("Post created successfully!")}
+                                onSuccess={()=>notifySuccess("Post created successfully!")}
                                 buttonText={"Post"} placeholder={"What's on your mind?"} />
                         </div>
                     </div>

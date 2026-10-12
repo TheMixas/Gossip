@@ -3,7 +3,7 @@ import './scss/notifs-page.scss'
 import SmallAvatar from "../_Shared/SmallAvatar";
 import {useCallback, useEffect, useState} from "react";
 import {acceptFriendRequest, fetchFriendRequests, rejectFriendRequest} from "../../utils/UserCalls";
-export default function NotifsPage({toggleAuthPopup, user={name:"Pablo"}}) {
+export default function NotifsPage({toggleAuthPopup, user={name:"Unindentified User", avatar:""}}) {
     const [displayFriendRequests, setDisplayFriendRequests] = useState(true)
 
     const handleFriendRequestClick = ()=>{

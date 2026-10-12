@@ -6,7 +6,10 @@ import defaultAvatar from "../../imgs/defaultAvatar.png"
 import groupAvatar from "../../imgs/groupAvatar.png"
 import {fetchAvatar} from "../../utils/UserCalls";
 export default function ChatCard({conversation, handleClick,isConversationCard}){
-        const [convoIcon, setConvoIcon] = useState(null)
+        const [convoIcon, setConvoIcon] = useState(undefined)
+        useEffect(() => {
+            console.log("convoIcon: ",convoIcon)
+        },[convoIcon])
         if(isConversationCard){
             
         }
@@ -14,21 +17,19 @@ export default function ChatCard({conversation, handleClick,isConversationCard})
             if(conversation.isGroupChat)
                 setConvoIcon(groupAvatar)
             else{
-                
-                fetchAvatar(conversation.userID).then((res) => {
-                    if(res.status !== 200){
-
-                        
-                        throw new Error("Error fetching avatar")
-                    }else return res.blob()
-                }).then(blob => {
-                    setConvoIcon(URL.createObjectURL(blob));
+                let avatarUrl;
+                await fetchAvatar(conversation.userID).then(async (res) => {
+                    console.log("res: ",res)
+                    let data = await res.json()
+                    console.log("data: ",data)
+                    if (data?.error) return
+                    avatarUrl = data?.avatar;
+                    setConvoIcon(avatarUrl)
                 }).catch((error)=>{
-                    
-                    setConvoIcon(defaultAvatar)
+                    console.log("error while trying to get avatar", error)
                 });
             }
-        },[conversation?.isGroupChat])
+        },[conversation.isGroupChat, conversation.userID])
 
         useEffect(() => {
             getConvoIcon().catch(err => console.log(err))
@@ -38,7 +39,7 @@ export default function ChatCard({conversation, handleClick,isConversationCard})
             <div className="user-list__users--user" onClick={()=>{
                 handleClick(conversation)
             }}>
-                <SmallAvatar src={convoIcon} />
+                <SmallAvatar src={convoIcon === undefined ? require("../../imgs/defaultAvatar.png") : `data:image/jpeg;base64,${convoIcon}`}/>
                 <div className="user-list__users--user__info">
                     <span href="" className="user-list__users--user__info--name">{conversation.conversationName}</span>
                     <div className="user-list__users--user__info__last-message">

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { BrowserRouter } from 'react-router-dom';
+import {BrowserRouter, HashRouter, Router} from 'react-router-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -12,9 +12,9 @@ import {PostModalContextProvider} from "./components/context/post-modal.context"
 import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en";
 
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 TimeAgo.addDefaultLocale(en)
+
 
 root.render(
   // <React.StrictMode>
@@ -28,9 +28,8 @@ root.render(
         </AuthModalContextProvider>
         </CreatePostModalContextProvider>
         </PostModalContextProvider>
-
     </BrowserRouter>
-  // </React.StrictMode>
+
 );
 
 // If you want to start measuring performance in your app, pass a function

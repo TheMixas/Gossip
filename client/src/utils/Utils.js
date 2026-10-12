@@ -50,3 +50,15 @@ export const getUsernameFromID = async (id) =>{
 export const clearAccountInfo = () =>{
     localStorage.removeItem("gossip_user");
 }
+export  function convertToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            // Split the result on the comma and return the second part
+            const base64Data = reader.result.split(',')[1];
+            resolve(base64Data);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}

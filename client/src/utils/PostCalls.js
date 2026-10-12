@@ -1,11 +1,15 @@
 // post a post
 import {apiURL} from "../api";
+import {isAuthenticated} from "./AuthCalls";
 export async function handleCreatePostForm(e,textArea,images=[],isComment=false,originalPostId=undefined,isRetweet=false,){
+    console.log('creating a post')
+
+    //cant if not authenticated
+
     //NOTE: returns a promise
     
     const formData = new FormData();
 
-    
     for (let i = 0; i < images.length; i++) {
         formData.append(`images`, images[i]);
 
@@ -19,7 +23,7 @@ export async function handleCreatePostForm(e,textArea,images=[],isComment=false,
 
     //print ogPostId
 
-    return  fetch(`${apiURL}/posts/post`, {
+    return await fetch(`${apiURL}/posts/post`, {
         method: 'POST',
         credentials: 'include',
         body: formData

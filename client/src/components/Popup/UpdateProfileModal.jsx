@@ -1,4 +1,5 @@
 import {useState} from "react";
+import { useNavigate } from 'react-router-dom';
 import './SCSS/update-profile-modal.scss'
 
 import defaultBanner from "./../../imgs/banner.png"
@@ -6,6 +7,7 @@ import defaultAvatar from "./../../imgs/defaultAvatar.png"
 import {apiURL} from "../../api";
 
 export default function UpdateProfileModal({on=true, swapState}) {
+    const navigate = useNavigate();
     if(on){
         document.body.style.overflow = "hidden"
         // document.body.classList.add("active-modal")
@@ -29,6 +31,8 @@ export default function UpdateProfileModal({on=true, swapState}) {
         setUserBannerBlob(e.target.files[0])
     }
 
+
+
    return(<>
        {on &&(
               <div className="modal">
@@ -38,7 +42,9 @@ export default function UpdateProfileModal({on=true, swapState}) {
                                 <span onClick={swapState} className="container__header--close-btn">x</span>
                                 <h1 className="container__header--title">Update your profile.</h1>
                             </div>
-                            <form action={`${apiURL}/users/update`} className="container__form" method="post"  encType="multipart/form-data">
+                            <form action={`${apiURL}/users/update`}
+
+                                  className="container__form" method="post"  encType="multipart/form-data">
                                 {/*<div className="container__form__inputs">*/}
                                     <label className="container__form__inputs__labels--banner">
                                         <div className="container__form__inputs__labels--banner--button"
@@ -81,21 +87,22 @@ export default function UpdateProfileModal({on=true, swapState}) {
                                             name={"website"}
                                              placeholder={"Website"}
                                                 />
-                                    <input className="container__form__inputs--input-text"
-                                           type={"text"}
-                                             name={"oldPassword"}
-                                           placeholder={"Old Password"}
-                                           required
-                                    />
+                                    {/*<input className="container__form__inputs--input-text"*/}
+                                    {/*       type={"text"}*/}
+                                    {/*         name={"oldPassword"}*/}
+                                    {/*       placeholder={"Old Password"}*/}
+                                    {/*       required*/}
+                                    {/*/>*/}
 
-                                    <input className="container__form__inputs--input-text"
-                                           type={"text"}
-                                           name={"password"}
-                                           placeholder={"New Password"}
-                                    />
+                                    {/*<input className="container__form__inputs--input-text"*/}
+                                    {/*       type={"text"}*/}
+                                    {/*       name={"password"}*/}
+                                    {/*       placeholder={"New Password"}*/}
+                                    {/*/>*/}
                                     <input className="container__form__inputs--submit-btn"
                                              type={"submit"}
-                                           />
+                                                value={"Update"}
+                                   />
                             </form>
 
 

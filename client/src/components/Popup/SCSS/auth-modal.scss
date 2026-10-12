@@ -99,7 +99,9 @@
       }
     }
     &--footer{
-      text-align: center;
+     display: flex;
+      justify-content: center;
+      gap: .5rem;
       &--text{
         color: #fefefe;
         font-size: 1.2em;

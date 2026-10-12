@@ -2,6 +2,10 @@ import {useEffect, useState} from "react";
 import {handleCreatePostForm} from "../../utils/PostCalls"
 
 import FileContainer from "./FileContainer";
+import SuggestedUsernameBox from "./SuggestedUsernamesBox";
+import {convertToBase64} from "../../utils/Utils";
+import {isAuthenticated} from "../../utils/AuthCalls";
+import {notifyError} from "../../utils/toast";
 
 import('./SCSS/input-field.scss')
 export default function InputField({text="What`s up?",buttonText="Post",isMessage,
@@ -35,7 +39,7 @@ export default function InputField({text="What`s up?",buttonText="Post",isMessag
         
     }
     const handleMediaRemove = (preview, image) => {
-        
+
 
         //remore from pewviews
         setMediaPreview(mediaPreview.filter((imgPreview) => imgPreview !== preview));
@@ -48,13 +52,18 @@ export default function InputField({text="What`s up?",buttonText="Post",isMessag
         URL.revokeObjectURL(preview)
 
     }
+
+
     //handle text area
     const handleTextArea = (e) => {
         setTextArea(e.target.value);
     }
-
+//The names of divs refer to this being a creation tweet component, however it is also a
+    //creation post component, and a creation message component
     return(
         <div className="create-tweet__container" style={{...containerSCSS}}>
+
+            {/*<SuggestedUsernameBox/>*/}
             <div className="create-tweet" style={{...inputSCSS,height:'auto'}}>
                 {/*<img className="create-tweet__avatar"></img>*/}
                 <span className="create-tweet__char-limit">{currentChars}/280</span>
@@ -73,19 +82,31 @@ export default function InputField({text="What`s up?",buttonText="Post",isMessag
                                 e.target.reset();
                                 return;
                           }
-                         handleCreatePostForm(e, textArea,media, isComment, originalPostID,isRetweet).then(async res => {
-                             
-                             let resJSON = await res.json()
-                             
-                             if (res.status === 200) {
-                                 setTextArea("")
-                                 setMedia([])
-                                 setMediaPreview([])
-                                 e.target.reset();
+                          if (!isAuthenticated()) {
+                              notifyError("You must be logged in to post")
+                              return;
+                          }
+                          if(textArea.length === 0 && media.length === 0){
+                            notifyError("You must have some content to post")
+                              return;
+                          }
+                          await handleCreatePostForm(e, textArea,media, isComment, originalPostID,isRetweet).then(async res => {
+                              console.log('09092')
+                              if(res.status !== 200){
+                                  console.log('res: ', res)
+                                  notifyError(`Your post was not created. Remember that images cannot be bigger than 2MB.`)
+                                  return;
+                              }
+                              console.log('0909')
+                              let resJSON = await res.json()
+
+                              if (res.status === 200) {
+                                 let base64Photos = await Promise.all(media.map(convertToBase64));
+                                 console.log("base64Photos: ", base64Photos)
                                  onSuccess({
                                      original_post_id: originalPostID,
                                      body: textArea,
-                                     photos: mediaPreview,
+                                     photos: base64Photos,
                                      isRetweet,
                                      isComment,
                                      id: resJSON.id,
@@ -96,8 +117,15 @@ export default function InputField({text="What`s up?",buttonText="Post",isMessag
                                      }
 
                                  })
+                                 setTextArea("")
+                                 setMedia([])
+                                 setMediaPreview([])
+                                 e.target.reset();
+
                              }
-                         }).catch()
+                         }).catch(e => {
+                             console.log(e)
+                         })
                       }}
                       className="create-tweet__input-and-actions">
 

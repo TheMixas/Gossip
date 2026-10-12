@@ -2,6 +2,7 @@ import {isAuthenticated} from "./AuthCalls";
 import {getID} from "./Utils";
 import {useEffect} from "react";
 import {apiURL} from "../api";
+import {notifyError} from "./toast";
 console.log("apiURL: ", apiURL)
 console.log("process.env.NODE_ENV in utils js: ", process.env.REACT_APP_REACT_ENV)
 console.log("process.env.REACT_APP_1 in utils js", process.env.REACT_APP_1)
@@ -43,6 +44,34 @@ export function fetchMiniProfile(userId){
 
     //call api to logout
     return fetch(`${apiURL}/${userId}/mini-profile`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+}
+
+
+/*
+* Params: token from cookies
+* * Returns:
+* <ul>
+* <li>username</li>
+* <li>name</li>
+* <li>avatar</li>
+* <li>banner</li>
+* <li>created</li>
+* <li>status</li>
+* <li>postCount</li>
+* <li>friendCount</li>
+* <li>likesCount</li>
+* </ul>
+*   All images returned are in base64
+* */
+export function fetchOwnMiniProfile(){
+    console.log("fetchOwnMiniProfile called")
+    return fetch(`${apiURL}/own-mini-profile/`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -111,7 +140,10 @@ export function rejectFriendRequest(rejectectedId){
 //SEND FRIEND REQUEST
 export function sendFriendRequest(friendId){
 
-if (!isAuthenticated()) return undefined;
+if (!isAuthenticated()) {
+    notifyError("This action requires you to be logged in")
+    return undefined;
+}
 
     //call api to logout
     return fetch(`${apiURL}/friendrequests/send`, {

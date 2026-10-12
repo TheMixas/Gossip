@@ -20,30 +20,28 @@ function NavBarProfile(){
     const fetchAvatar = useCallback(async () => {
 
         let avatarUrl;
-        await fetchOwnAvatar().then(res => res.json()).then(
-            (data) => {
-                
-                if(data.error) return 
-                avatarUrl = data?.avatar;
-            }).catch(err => console.log(err))
+        await fetchOwnAvatar().then(async res => {
+            let data = await res.json()
+            if (data?.error) return
+            avatarUrl = data?.avatar;
+        }).catch(err => console.log("err while trying to get avatar", err))
         //print
         setAvatar(avatarUrl);
     },[])
     const fetchBanner = useCallback(async () => {
 
             let bannerUrl;
-            await fetchOwnBanner().then(res => res.json()).then(
-                (data) => {
-                    
-                    if(data.error) return 
-                    bannerUrl = data?.banner;
-                }).catch(err => console.log(err))
+            await fetchOwnBanner().then(async res => {
+                let data = await res.json()
+                if (data.error) return
+                bannerUrl = data?.banner;
+            }).catch(err => console.log("err while trying to get banner",err))
             //print
             setBanner(bannerUrl);
     },[])
     useEffect(  () => {
-        fetchAvatar().catch(err => 
-        fetchBanner().catch(err => console.log(err)))
+        fetchAvatar().catch(err => console.log("avatar fetch error: "+err))
+        fetchBanner().catch(err => console.log("banner fetch error: "+err))
     },[fetchAvatar, fetchBanner])
     useEffect( () => {
         
@@ -66,7 +64,13 @@ function NavBarProfile(){
                         <>
                             <a onClick={toggleCreatePostPopup}>
                                 Create A Post</a>
-                            <a onClick={()=>navigate(`${isAuthenticated() ? `/${getUsername()}` : '/users/no-user'}`)}>
+                            <a onClick={()=>{
+                                if (isAuthenticated()) {
+                                    window.location.href = `/${getUsername()}`;
+                                } else {
+                                    window.location.href = '/users/no-user';
+                                }
+                            }}>
                                 View Profile</a>
                             <div className="user-profile__line"></div>
                             <a onClick={logout}>Log out</a>

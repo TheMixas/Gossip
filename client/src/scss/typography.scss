@@ -9,6 +9,12 @@
     color: vars.$primary;
   }
 }
+
+.time-text{
+  font-size: 1rem;
+  color: vars.$light-1;
+
+}
 .post-text{
     font-size: 1.3rem;
     line-height: 1.5;
@@ -38,10 +44,20 @@
   color: vars.$light-1 !important;
   font-weight: 500;
 }
+.text--medium--primary--bold{
+  font-size: 2rem !important;
+  color: vars.$primary !important;
+  font-weight: 700;
+}
 .text--big--primary--bold{
     font-size: 2.5rem !important;
     color: vars.$primary !important;
     font-weight: 700;
+}
+.text--huge--primary--bold{
+  font-size: 5rem !important;
+  color: vars.$primary !important;
+  font-weight: 700;
 }
 .text--medium-big--light--bold{
   font-size: 2rem !important;
@@ -53,5 +69,43 @@
     color: black !important;
     font-weight: 600;
 
+}
+
+
+.heading-text{
+  //import primary foint
+    font-family: vars.$primary-font;
+    font-size: 2.5rem;
+}
+//mixin
+@mixin heading-text{
+    font-family: vars.$primary-font;
+    font-size: 2.5rem;
+}
+.supporting-text{
+    font-family: vars.$secondary-font;
+    font-size: 1.5rem;
+}
+@mixin supporting-text{
+    font-family: vars.$secondary-font;
+    font-size: 1.5rem;
+}
+.supporting-text-2{
+    font-family: vars.$secondary-font;
+    font-size: 1.3rem;
+}
+
+.color--primary{
+    color: vars.$primary !important;
+}
+.color--light-1{
+    color: vars.$light-1 !important;
+}
+
+.bold{
+    font-weight: bold !important;
+}
+.italic{
+    font-style: italic !important;
 }
 

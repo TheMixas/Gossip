@@ -23,6 +23,7 @@
     flex-direction: column;
   margin: 7rem auto;
     width: 59rem;
+    height: fit-content;
   box-sizing: border-box;
 
   @media only screen and (max-width: 550px) {
@@ -36,12 +37,20 @@
   &__header{
     display: flex;
     &--close-btn{
+      display: flex;
+        justify-content: center;
+        align-items: center;
       cursor: pointer;
-      font-size: 1.6rem;
       position: relative;
-      color:black;
-      top: -2rem;
-        left: 60rem;
+      margin-left: auto;
+      //background-color: #3c3f44;
+      //color: vars.$primary;
+      //font-size: 3rem;
+      //top: -2rem;
+      //  left: 60rem;
+        width: 3rem;
+        height: 4rem;
+      background: url("./../../../svgs/cancel_circle_white.svg") no-repeat center center;
     }
     &__names{
       display:flex;
@@ -51,6 +60,7 @@
         font-size: 1.8rem;
         margin: 0;
         font-weight: bold;
+        color: white;
       }
       &--username{
         font-size: 1.4rem;
@@ -116,16 +126,24 @@
       display: flex;
       gap: 2rem;
       &__action{
+        &--active{display: flex;
+            justify-content: center;
+            align-items: center;
+          width: 3rem;
+          height: 3rem;
+          background-color: vars.$primary;
+            border-radius: 50%;
+        }
         &--icon{
             cursor: pointer;
             width: 2.3rem;
             height: 2.3rem;
           &---reply{
-            background: url("../../../svgs/reply.svg");
+            background: url("../../../svgs/reply.svg") no-repeat center center;
             background-size: contain;
           }
           &---retweet{
-            background: url("../../../svgs/retweet.svg");
+            background: url("../../../svgs/retweet.svg") no-repeat center center;
             background-size: contain;
           }
             &---like{
@@ -169,7 +187,7 @@ body.active-modal {
   position: relative;
   perspective: 1000px;
   width: 100%;
-  height: 100%;
+  height: fit-content;
   &--inner{
     position: relative;
     width: 100%;

@@ -14,7 +14,6 @@ export function UserInfoList({showDetails,members={},toggleDetails}) {
                         }}
                         className="close-button">✖</span>
                     {Object.keys(members)?.map(member => {
-                        
                         if(member != getID()){
                             return <DetailedInfoCard showDetails={showDetails} member={members[member]} key={member}/>
                         }

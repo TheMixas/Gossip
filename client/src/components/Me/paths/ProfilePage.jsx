@@ -18,6 +18,8 @@ import {cancelFriendRequest, fetchMostPopularUsers, fetchProfile, sendFriendRequ
 import {isAuthenticated} from "../../../utils/AuthCalls";
 import NotFound from "../../404/404";
 import {Coin} from "react-cssfx-loading";
+import date from "date-and-time";
+import {notifyEasterEgg, notifyError, notifySuccess} from "../../../utils/toast";
 export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopup}) {
 
     const navigate = useNavigate()
@@ -45,8 +47,6 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
         }).catch(err=>{
             
         })
-
-
     },[])
     const getMostPopularUsers = useCallback(async () => {
         await fetchMostPopularUsers()?.then(res => res.json()).then(
@@ -62,32 +62,27 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
     },[GetProfileContent])
 
 
-    //If no user, show no account page
-    useEffect(() => {
-
-    },[user])
-
     const handleAddFriend = async (friendID) => {
         if(requestSent) {
             cancelFriendRequest(user?.id)?.then(
                 (res) => {
                     if(res.status === 200){
-                        alert("Friend request canceled!")
+                        notifySuccess("Friend request canceled!")
                         setRequestSent(false)
 
                     }else
-                        alert("Something went wrong!")
+                        notifyError("Something went wrong!")
 
                 }).catch()
         }else{
             await sendFriendRequest(user?.id)?.then(
                 (res) => {
                     if(res.status === 200){
-                        alert("Friend request sent!")
+                        notifySuccess("Friend request sent!")
                         setRequestSent(true)
-                    }else
-                        alert("Something went wrong!")
-
+                    }else{
+                        notifyError("Something went wrong!")
+                    }
                 }).catch()
         }
 
@@ -140,7 +135,7 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
                                         <div className="profile__nav__actions__dropdown__item--icon profile__nav__actions__dropdown__item--icon---block"/>
                                         <span
 
-                                        onClick={() => {alert("This feature is yet to be implemented! :)")}}
+                                        onClick={() => {notifyEasterEgg("This feature is yet to be implemented! :)")}}
                                             className="profile__nav__actions__dropdown__item--text">Block @TheMixas</span>
                                     </div>
 
@@ -168,7 +163,9 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
                                     <span className="profile__body__left__user__info__additional-info--status profile-info-box text--medium--thin">{user?.status}</span>
                                     <div className="profile__body__left__user__info__additional-info--container profile-info-box">
                                         <img src={calendar} alt="" className="profile__body__left__user__info__additional-info--icon"/>
-                                        <span className="profile__body__left__user__info__additional-info--joined text--medium--bold">Joined: {user?.created}</span>
+                                        {/*<span className="profile__body__left__user__info__additional-info--joined text--medium--bold">Joined: {user?.created}</span>*/}
+                                        <span className="profile__body__left__user__info__additional-info--joined text--medium--bold">Joined: {date.format(new Date(user?.created), 'dddd [of] MMMM YYYY')}</span>
+
                                     </div>
                                     {
                                         user?.location &&
@@ -195,7 +192,7 @@ export default function ProfilePage({contentType, toggleUpdatePopup,showPostPopu
                                 }
                                 {user?.postImages?.length > 0 &&
                                 <>
-                                    <h1 className={"text--medium--big--black--medium--bold"}>Media and images</h1>
+                                    <h1 className={"text--big--primary--bold"}>Media and images</h1>
                                     <div className="profile__body__left__user__images">
                                         {user?.postImages?.map((image, index) => (
                                             <img key={index} className={"profile__body__left__user--small-image"} src={`data:image/png;base64,${image}`} alt={""}/>

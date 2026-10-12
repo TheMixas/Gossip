@@ -18,6 +18,7 @@ import {
     fetchUserConversations
 } from "../../utils/ChatCalls"
 import {compile} from "sass";
+import {notifyError} from "../../utils/toast";
 
 
 
@@ -59,17 +60,16 @@ export default function Messages({socket}) {
     const [showDetails, setShowDetails] = useState('hidden');//empty for normal, hidden to hide
     const [expanded, setExpanded] = useState('extended');//empty for normal, 'extended' for    expand header,chat and input
 
-    const [currentConversation, setCurrentConversation] = useState({conversationID: 0, conversationName: '', isGroupChat: false, userID: 0, members: {}});
-
+    const [currentConversation, setCurrentConversation] = useState({conversationID: -1, conversationName: '', isGroupChat: false, userID: 0, members: {}});
+    useEffect(() => {
+        console.log("currentConversation: ", currentConversation)
+    }, [currentConversation]);
     const [messages, setMessages] = useState([]);
     const [isConnected, setIsConnected] = useState(false);
 
     //NOTE: structure = {conversationID, conversationName, isGroupChat, userID}
     const [conversations,setConversations] = useState([])
 
-    useEffect(() => {
-        
-    }, [currentConversation]);
 
     //NOTE: fetching conversations and suggested users
     let getConversations = useCallback(async () => {
@@ -98,9 +98,6 @@ export default function Messages({socket}) {
         getConversations().catch(err => console.log(err));
     },[getConversations])
 
-    useEffect(() => {
-        
-    }, [messages]);
     function onConnect() {
         setIsConnected(true);
     }
@@ -208,6 +205,7 @@ export default function Messages({socket}) {
         //NOTE: make media to base64
         let base64Media = [];
         if(media){
+            console.log("Converting media to base64: ", media)
             base64Media = await convertMediaToBase64(media);
         }
         
@@ -217,15 +215,18 @@ export default function Messages({socket}) {
             
             socket.emit('group chat message', currentConversation.conversationID,message, base64Media)
         }else{
-            
-            
+            //Remove yourself from receiver list
+            console.log("currentConversation.members: ", currentConversation.members)
             let receiverID = Object.keys(currentConversation.members)?.filter((id)=>{
-                
-                
-                
                 return id != getID();
             })[0]
-            
+            if(receiverID === undefined){
+                notifyError("Error sending message")
+                return;
+            }
+            console.log("Sending private message to: ", receiverID)
+            //print out all parameters and their names
+            console.log("message: ", message, "base64Media: ", base64Media, "currentConversation.conversation_id: ", currentConversation.conversation_id)
             socket.emit('private chat message'  ,receiverID,message, base64Media,currentConversation.conversation_id);
         }
 
@@ -248,6 +249,7 @@ export default function Messages({socket}) {
 
     }
     const handleReceiveMessage = async (message) => {
+        console.log("received message: ", message)
         //NOTE: message = {value,isFile,senderid}
         
         
@@ -303,6 +305,13 @@ export default function Messages({socket}) {
                         }
 
                     </div>
+                    <div
+                        style={{display: `${currentConversation.conversationID === -1 ? 'flex' : 'none'}`}}
+                        className="no-conversation">
+                        <div className="no-conversation__text">
+                            <h1 className="no-conversation__text--title text--huge--primary--bold">Select a conversation!</h1>
+                        </div>
+                    </div>
                     <ChatUserHeader expanded={expanded} onClick={handleProfileClick} currConversation={currentConversation}/>
                     <div className={`chat chat--${expanded}`}>
                         <div className="chat__body">
@@ -326,6 +335,7 @@ export default function Messages({socket}) {
                         </div>
                     </div>
                     <div
+                        style={{display: `${currentConversation.conversationID === -1 ? 'none' : 'block'}`}}
                         className={`input-field-container input-field-container--${expanded} input-field-container--${showDetails ==='' && 'hidden-on-mobile'}`}>
                         <InputField buttonText={"Send"} text={"Say something..."}
                                     inputSCSS={customInputBoxSCSS}

@@ -1,7 +1,8 @@
 
-import './App.css';
+import './App.scss';
 import Navbar from "./components/navbar";
 import Feed from "./components/Feed/feed";
+import {HashRouter, Navigate, Router} from 'react-router-dom'
 //import routes and route from react-router-dom
 import { Routes, Route } from "react-router-dom";
 import ProfilePage from "./components/Me/paths/ProfilePage";
@@ -11,7 +12,7 @@ import Messages from "./components/Chat/messages";
 import AuthModal from "./components/Popup/AuthModal";
 import UpdateProfileModal from "./components/Popup/UpdateProfileModal";
 import {isAuthenticated} from "./utils/AuthCalls";
-import {handleGetPost, handleGetPostComments, handleGetPostRecentLikers} from "./utils/PostCalls";
+import {handleGetPostComments, handleGetPostRecentLikers} from "./utils/PostCalls";
 import { JSEncrypt } from "jsencrypt";
 import {socket} from "./socket";
 import NotifsPage from "./components/Notifs/notifsPage";
@@ -21,6 +22,8 @@ import NoAccount from "./components/404/no-account";
 import NotFound from "./components/404/404";
 import CreatePostModal from "./components/Popup/CreatePostModal";
 import {PostModalContext} from "./components/context/post-modal.context";
+import ForgotPassword from "./components/ForgotPassword/ForgotPassword";
+import {ToastContainer} from "react-toastify";
 
 
 function App() {
@@ -41,12 +44,6 @@ function App() {
     })
     const getPostRecentLikers = useCallback(async (postId,limit=100,offset=0)=>{
         return await handleGetPostRecentLikers(postId,limit,offset)
-    })
-    const getAndSetRetweetedPost = useCallback(async (postId)=>{
-        handleGetPost(postId).then(r => r.json()).then(r => {
-            
-            setRetweetedPost(r)
-        }).catch(e => console.log(e))
     })
 
 
@@ -73,14 +70,11 @@ function App() {
 
     },[getAmIAuthenticated])
     const setPopupPostAndToggle= async (post) => {
-
-        
         setPopUpPost(post)
         getPostComments(post.id).then(r => {
             
             setPopUpPostComments(r)
         })
-        await getAndSetRetweetedPost(post.original_post_id)
         getPostRecentLikers(post.id).then(r => setPopUpPostRecentLikers(r))
         togglePostPopup()
     }
@@ -88,7 +82,6 @@ function App() {
         setPopUpPost(post)
         getPostComments(post.id).then(r => setPopUpPostComments(r))
         getPostRecentLikers(post.id).then(r => setPopUpPostRecentLikers(r))
-        await getAndSetRetweetedPost(post.original_post_id)
         setPopup(true)
     }
     useEffect(()=>{
@@ -100,10 +93,10 @@ function App() {
 
   return (
       <>
-        <Routes>
+            <Routes>
             <Route path={"/"} element={<>
                 <Feed
-                    showPostPopup={setPopupPostAndToggle}
+                    setAndShowPopup={setPopupAndOpen}
                 />
 
                 <CreatePostModal/>
@@ -131,6 +124,11 @@ function App() {
                 <UpdateProfileModal on={updateUserPopup} swapState={toggleUpdateUserPopup}/>
 
             </>}/>
+                <Route path={"/forgot-password"} element={isAuthenticated() ? <Navigate to="/" /> : <>
+                    <Navbar/>
+                    <AuthModal stopAuthPopup={true}/>
+                    <ForgotPassword/>
+                </>} />
             {/*PROFILE*/}
             <Route path={"/:username"} element={<>
                 <Navbar/>
@@ -185,6 +183,22 @@ function App() {
                 <AuthModal/>
             </>}/>
         </Routes>
+          <ToastContainer
+              position="top-left"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="dark"
+              style={{zIndex: 9999999999,
+              fontFamily: "Poppins, sans-serif"
+              }}
+
+          />
       </>
 
   );

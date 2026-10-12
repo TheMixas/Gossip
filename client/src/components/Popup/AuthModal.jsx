@@ -2,11 +2,11 @@ import {useContext, useEffect, useState} from "react";
 import'./SCSS/auth-modal.scss'
 import {login, register} from "../../utils/AuthCalls";
 import {AuthModalContext} from "../context/auth-pop-up.context";
-export default function AuthModal () {
+export default function AuthModal ({stopAuthPopup=false}) {
 
 
     //CONTEXT:
-    const {toggleAuthPopup, authPopup} = useContext(AuthModalContext)
+    const {toggleAuthPopup, authPopup, setAuthPopup} = useContext(AuthModalContext)
 
     if(authPopup){
         document.body.style.overflow = "hidden"
@@ -22,8 +22,10 @@ export default function AuthModal () {
         setUserCredentials({...userCredentials, [e.target.name]: e.target.value})
     }
     useEffect(()=>{
-        
-    }, [userCredentials])
+        if(stopAuthPopup){
+            setAuthPopup(false)
+        }
+    }, [setAuthPopup, stopAuthPopup])
 
     const [isLogin, setIsLogin] = useState(false) // true = login, false = register
     return(
@@ -57,7 +59,7 @@ export default function AuthModal () {
                                              onClick={(e)=>{
                                                 e.preventDefault()
                                                 login(userCredentials, toggleAuthPopup)
-                                                 setUserCredentials({})
+                                                 // setUserCredentials({})
                                             }}
                                     >Login</button>
                                 </div>
@@ -65,7 +67,9 @@ export default function AuthModal () {
                             </form>
                             <div className="login-container__form--footer">
                                 <span className="login-container__form--footer--text">Don`t have an account?</span>
-                                <span onClick={()=>setIsLogin(!isLogin)} className="login-container__form--footer--link">Log in</span>
+                                <span onClick={()=>setIsLogin(!isLogin)} className="login-container__form--footer--link">Register</span>
+                                <span className="register-container__form--footer--text text--medium--bold">OR</span>
+                                <a href={"/forgot-password"} className="register-container__form--footer--text">Forgot your password?</a>
 
                             </div>
                         </div>
@@ -105,7 +109,7 @@ export default function AuthModal () {
                                             onClick={(e)=>{
                                                 e.preventDefault()
                                                 register(userCredentials, toggleAuthPopup)
-                                                setUserCredentials({})
+                                                // setUserCredentials({})
                                             }}
                                     >Register</button>
                                 </div>
