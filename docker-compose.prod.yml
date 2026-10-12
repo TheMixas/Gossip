@@ -1,0 +1,20 @@
+# Production overrides (live demo VM): use the shared MySQL on the "portfolio"
+# network and only listen on localhost, behind a reverse proxy that handles HTTPS.
+services:
+  app:
+    environment:
+      MYSQL_HOST: mysql
+      ALLOWED_ORIGINS: https://${SITE_DOMAIN:?Set SITE_DOMAIN in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    ports: !override
+      - "127.0.0.1:5102:8080"
+    depends_on: !reset []
+    networks: [portfolio]
+
+  db:
+    profiles: ["local-db"]   # not started in production
+
+networks:
+  portfolio:
+    external: true

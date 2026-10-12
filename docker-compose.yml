@@ -1,0 +1,40 @@
+# Run everything locally: docker compose up --build  ->  http://localhost:8080
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: gossip
+      MYSQL_PASSWORD: ${DB_PASSWORD:-gossip}
+      MYSQL_DATABASE: gossip
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080}
+      # Optional: store images in S3 instead of the local volume (also needs AWS credentials)
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:-}
+      # Optional: Gmail address + app password to enable password-reset emails
+      EMAIL: ${EMAIL:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: gossip
+      MYSQL_USER: gossip
+      MYSQL_PASSWORD: ${DB_PASSWORD:-gossip}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    command: ["--performance-schema=OFF", "--innodb-buffer-pool-size=32M", "--mysqlx=OFF"]
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  uploads:
+  dbdata:
