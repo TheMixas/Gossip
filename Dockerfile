@@ -4,7 +4,8 @@ WORKDIR /client
 COPY client/package.json client/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY client/ .
-ENV CI=false
+# Let the build use swap instead of crashing on small machines (the demo VM has 1 GB RAM)
+ENV CI=false NODE_OPTIONS=--max-old-space-size=1536
 RUN npm run build
 
 # ---------- 2. Server: REST API + Socket.IO chat + the built client ----------

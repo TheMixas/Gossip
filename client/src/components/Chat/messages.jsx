@@ -16,7 +16,6 @@ import {
     fetchSuggestedFriends,
     fetchUserConversations
 } from "../../utils/ChatCalls"
-import {compile} from "sass";
 import {notifyError} from "../../utils/toast";
 
 
