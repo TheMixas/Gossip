@@ -1,3 +1,4 @@
+import {randomUUID} from "crypto";
 import express from "express";
 import validator from 'validator';
 
@@ -293,7 +294,7 @@ router.post('/users/update', verifyToken,upload.fields([{name:'banner', maxCount
                 console.log("avatar file exists, attempting to update user avatar")
                 let avatarFile = req.files['avatar'][0]
                 console.log("avatarFile: ", avatarFile)
-                let avatarName = avatarFile.fieldname + "-" + Date.now() + path.extname(avatarFile.originalname)
+                let avatarName = avatarFile.fieldname + "-" + randomUUID() + path.extname(avatarFile.originalname)
                 updates['avatarPath'] = avatarName
                 console.log("avatarName: ", avatarName)
                 uploadToS3(avatarFile, avatarName)
@@ -307,7 +308,7 @@ router.post('/users/update', verifyToken,upload.fields([{name:'banner', maxCount
                 //if banner file exists, update user banner
                 console.log("banner file exists, attempting to update user banner")
                 let bannerFile = req.files['banner'][0]
-                let bannerName = bannerFile.fieldname + "-" + Date.now() + path.extname(bannerFile.originalname)
+                let bannerName = bannerFile.fieldname + "-" + randomUUID() + path.extname(bannerFile.originalname)
                 console.log("bannerName: ", bannerName)
                 updates['bannerPath'] = bannerName
                 uploadToS3(bannerFile, bannerName)
@@ -335,7 +336,8 @@ router.post('/users/update', verifyToken,upload.fields([{name:'banner', maxCount
         console.log("user-router.js : /users/update error: ", e)
         return res.status(500).send({error : e})
     }
-    return res.redirect(`${process.env.FRONTEND_URL}/${req.user.username}`)
+    // Back to the profile page (same origin unless the client is hosted elsewhere)
+    return res.redirect(`${process.env.FRONTEND_URL || ''}/${req.user.username}`)
 
 
 })

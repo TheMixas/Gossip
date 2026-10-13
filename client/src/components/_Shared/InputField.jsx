@@ -65,7 +65,7 @@ export default function InputField({text="What`s up?",buttonText="Post",isMessag
             {/*<SuggestedUsernameBox/>*/}
             <div className="create-tweet" style={{...inputSCSS,height:'auto'}}>
                 {/*<img className="create-tweet__avatar"></img>*/}
-                <span className="create-tweet__char-limit">{currentChars}/280</span>
+                <span className="create-tweet__char-limit">{textArea.length}/280</span>
 
                 <form
                       encType="multipart/form-data"

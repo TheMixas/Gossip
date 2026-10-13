@@ -45,17 +45,13 @@ export async function GetConversationWithMembers(conversationId){
 }
 export async function getUserConversations(userId){
     const [rows] = await pool.query(`
-    SELECT c.conversation_id, c.conversation_name, cmgs.message_value AS last_message
-FROM conversation_members cm
-LEFT JOIN conversations c ON cm.conversation_id = c.conversation_id
-LEFT JOIN (
-    SELECT conversation_id, message_value,createdAt
-    FROM conversations_messages
-    WHERE isFile = 0
-    ORDER BY createdAt DEsc
-    LIMIT 1
-    ) cmgs ON cm.conversation_id = cmgs.conversation_id
-WHERE cm.user_id = ?;
+    SELECT c.conversation_id, c.conversation_name, c.isGroupChat,
+        (SELECT m.message_value FROM conversations_messages m
+         WHERE m.conversation_id = c.conversation_id AND m.isFile = 0
+         ORDER BY m.createdAt DESC LIMIT 1) AS last_message
+    FROM conversation_members cm
+    JOIN conversations c ON cm.conversation_id = c.conversation_id
+    WHERE cm.user_id = ?;
 
     `,[userId])
 

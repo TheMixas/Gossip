@@ -1,3 +1,4 @@
+import {randomUUID} from "crypto";
 import express from "express";
 
 const router = express.Router()
@@ -302,7 +303,8 @@ router.post('/posts/post', verifyToken, upload.array('images', 10),async (req,re
         if(req.files){
             req.files.forEach((file) => {
                 //send to s3
-                let filename = file.fieldname + '-' + Date.now() + path.extname(file.originalname)
+                // random name: several images in one post arrive in the same millisecond
+                let filename = file.fieldname + '-' + randomUUID() + path.extname(file.originalname)
                 uploadToS3(file, filename)
                 imagesPaths.push(filename)
             })

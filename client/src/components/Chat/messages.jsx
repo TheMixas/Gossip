@@ -79,8 +79,14 @@ export default function Messages({socket}) {
                 let resJSON= await res.json();
 
                 
-                for (let i = 0; i < resJSON.conversations.length; i++) {
-                    resJSON.conversations[i].conversationName = resJSON.conversations[i].conversation_name+"hi";
+                // Private chats are stored as "alice, bob": show the other person's name
+                const ownUsername = JSON.parse(localStorage.getItem('gossip_user') ?? '{}')?.username;
+                for (const conversation of resJSON.conversations) {
+                    const names = conversation.conversation_name.split(', ');
+                    conversation.conversationName = conversation.isGroupChat
+                        ? conversation.conversation_name
+                        : (names.find(name => name !== ownUsername) ?? conversation.conversation_name);
+                    conversation.lastMessage = {message_value: conversation.last_message ?? ''};
                 }
 
                 setConversations(resJSON.conversations);

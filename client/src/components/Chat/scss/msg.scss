@@ -4,7 +4,8 @@
     border-bottom-left-radius: .3rem;
     ////background-color: #3c3f44;
     //color: #fff;
-    align-self: flex-end
+    align-self: flex-end;
+    .message-column{ align-items: flex-end; }
   }
   &--others{
     border-bottom-right-radius: .3rem;
@@ -15,9 +16,10 @@
 
 }
 .sender-username{
-    font-size: 1.6rem;
+    font-size: 1.2rem;
     font-weight: 500;
-    color: white;
+    color: #b9bbbe;
+    margin-bottom: .3rem;
 }
 .message-column{
   display: flex;
