@@ -1,4 +1,11 @@
 import { apiURL } from "../api";
+// Resolves to true/false: whether the server can send password-reset emails
+export function isPasswordResetEnabled() {
+    return fetch(`${apiURL}/features/password-reset`)
+        .then(r => r.json())
+        .then(d => d.enabled === true)
+        .catch(() => false);
+}
 export function initiateForgotPassword(email="") {
     console.log("initiating forgot password, email: ", email);
     return fetch(`${apiURL}/initiate-forgot-password/${email}`, {

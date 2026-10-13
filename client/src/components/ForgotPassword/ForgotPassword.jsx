@@ -6,6 +6,7 @@ import {useSearchParams} from "react-router-dom";
 import {
     finalizeForgotPassword,
     initiateForgotPassword,
+    isPasswordResetEnabled,
     verifyForgotPasswordToken
 } from "../../utils/ForgotPasswordCalls";
 import {AuthModalContext} from "../context/auth-pop-up.context";
@@ -18,6 +19,11 @@ export default function ForgotPassword ({}) {
     const [newPassword, setNewPassword] = useState('');
     const [step, setStep] = useState(1);
     const [error, setError] = useState('');
+    // null while checking; false when the server has no email account set up (e.g. the online demo)
+    const [resetEnabled, setResetEnabled] = useState(null);
+    useEffect(() => {
+        isPasswordResetEnabled().then(setResetEnabled);
+    }, []);
 
     const handleEmailSubmit = () => {
         // Validate and send a request to the server to initiate the password reset
@@ -138,7 +144,9 @@ export default function ForgotPassword ({}) {
 
 
                                 <div className="forgot-password__container__body__step1__button">
-                                    <button onClick={() => handleEmailSubmit()}>Next</button>
+                                    <button onClick={() => handleEmailSubmit()} disabled={resetEnabled !== true}>
+                                        {resetEnabled === false ? 'Disabled for this online demo' : 'Next'}
+                                    </button>
                                 </div>
                             </div>
                         </div>

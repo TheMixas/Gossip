@@ -96,4 +96,9 @@ router.post(`/finalize-password-reset`, async (req, res) => {
     }
 });
 
+// Lets the client grey out "Forgot password" when no SMTP account is configured (e.g. the online demo)
+router.get('/features/password-reset', (req, res) => {
+    res.send({enabled: Boolean(process.env.EMAIL && process.env.EMAIL_PASS)})
+})
+
 export default router
