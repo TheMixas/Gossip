@@ -81,7 +81,3 @@ gossip/
 └── docker-compose.yml
 ```
 </details>
-
-## Author
-
-**Gustas Rove** ([TheMixas](https://github.com/TheMixas)). I built Gossip in 2023 and came back to it in 2026 to fix bugs, dockerise it and deploy it. See also [Ryklys](https://github.com/TheMixas/ryklys), a live-streaming platform with a C++ backend, and [Typefaster](https://github.com/TheMixas/Typefaster), a multiplayer typing race.
